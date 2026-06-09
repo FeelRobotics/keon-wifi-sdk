@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+coverage/
+dist-local/
+
+# Env
+.env
+.env.*
+build_info.json
+.tmp
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Husky
+.husky/_/
+
+# Load testing reports (generated artifacts)
+load-testing/reports/*.json

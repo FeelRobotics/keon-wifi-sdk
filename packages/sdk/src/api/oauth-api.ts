@@ -1,4 +1,5 @@
 import { AuthResponse, ResponseRegistrationToken } from './models/AuthResponse';
+import { DEFAULT_OAUTH_SERVER_URL } from './helpers';
 
 class OauthApiArgs {
   method: string = 'POST';
@@ -33,10 +34,11 @@ const oauthApi = async <T>(args: OauthApiArgs): Promise<T | null> => {
   });
 
   if (!rawResponse.ok) {
-    const toest_error = `status: ${rawResponse.status}. statusText:${rawResponse.statusText
-      }. text:${await rawResponse.text()}.`;
+    const errorMessage = `status: ${rawResponse.status}. statusText:${
+      rawResponse.statusText
+    }. text:${await rawResponse.text()}.`;
 
-    throw new Error(toest_error);
+    throw new Error(errorMessage);
   } else if (rawResponse.status === 204) {
     // No Content or not JSON type
     return null;
@@ -44,14 +46,13 @@ const oauthApi = async <T>(args: OauthApiArgs): Promise<T | null> => {
     // Check if the response has content
     const contentType = rawResponse.headers.get('content-type');
     if (contentType) {
-      return await rawResponse.json();
+      return (await rawResponse.json()) as T;
     }
   }
   return null;
 };
 
 const fetchAccessToken = async (
-  baseUrl: string | null = null,
   feelAppsToken: string,
   deviceConnectionKey: string | null = null
 ): Promise<[string | null, string | null]> => {
@@ -65,9 +66,7 @@ const fetchAccessToken = async (
   if (deviceConnectionKey) {
     args.data = { device_connection_key: deviceConnectionKey };
   }
-  if (baseUrl) {
-    args.baseUrl = baseUrl;
-  }
+  args.baseUrl = DEFAULT_OAUTH_SERVER_URL;
   const response = await oauthApi<AuthResponse>(args);
   if (response && 'access_token' in response) {
     return [response.access_token, response.refresh_token];
@@ -76,7 +75,6 @@ const fetchAccessToken = async (
 };
 
 const fetchRegistrationToken = async (
-  baseUrl: string | null = null,
   accessToken: string
 ): Promise<string | null> => {
   if (!accessToken) {
@@ -92,9 +90,7 @@ const fetchRegistrationToken = async (
   args.path = '/api/token/registration';
   args.headers = headers;
 
-  if (baseUrl) {
-    args.baseUrl = baseUrl;
-  }
+  args.baseUrl = DEFAULT_OAUTH_SERVER_URL;
   const response = await oauthApi<ResponseRegistrationToken>(args);
   if (response && 'registration_token' in response) {
     return response.registration_token;
@@ -102,25 +98,4 @@ const fetchRegistrationToken = async (
   return null;
 };
 
-const getTokenValidationTime = async (
-  baseURL: string,
-  jwtToken: string
-): Promise<number> => {
-  const headers = new Headers();
-  headers.set('Authorization', `Bearer ${jwtToken}`);
-
-  const args = new OauthApiArgs();
-  args.baseUrl = baseURL;
-  args.path = '/api/token/validation';
-  args.headers = headers;
-
-  const start = performance.now();
-  try {
-    await oauthApi(args);
-    return performance.now() - start;
-  } catch {
-    return -1;
-  }
-};
-
-export { fetchAccessToken, fetchRegistrationToken, getTokenValidationTime };
+export { fetchAccessToken, fetchRegistrationToken };

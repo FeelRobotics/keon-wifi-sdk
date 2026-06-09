@@ -1,97 +1,84 @@
 # Keon WiFi SDK
 
-This repository contains the Keon WiFi SDK (`@feelgroup/keon-wifi-sdk-react`) and a React-based example application demonstrating its usage. It is structured as a monorepo with two packages:
+Monorepo for the **Keon WiFi SDK** - a framework-agnostic TypeScript SDK for provisioning and controlling Keon WiFi devices.
 
-* **packages/sdk**: The TypeScript SDK for connecting to and provisioning Keon WiFi devices.
-* **packages/example**: A React application showcasing how to integrate and use the SDK.
+## Packages
 
----
+| Path             | Package                                                         | Description                                 |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------------- |
+| `packages/sdk`   | [`@feelrobotics/keon-wifi-sdk`](packages/sdk/README.md)         | Framework-agnostic core SDK.                |
+| `packages/react` | [`@feelrobotics/keon-wifi-sdk-react`](packages/react/README.md) | React `useKeonWiFi` hook (depends on core). |
 
-## Table of Contents
+## Examples
 
-* [Prerequisites](#prerequisites)
-* [Monorepo Structure](#monorepo-structure)
-* [Getting Started](#getting-started)
+Runnable example apps live under `examples/`:
 
-  * [1. Install Dependencies](#1-install-dependencies)
-  * [2. Build the SDK](#2-build-the-sdk)
-  * [3. Run the Example App](#3-run-the-example-app)
-* [Usage](#usage)
+Each `dev:*` script builds the packages first, so a single command runs the
+example from a clean checkout.
 
-  * [Importing the SDK](#importing-the-sdk)
-  * [Key Functions](#key-functions)
-* [Development Workflow](#development-workflow)
+| Example                      | Stack                                 | Run                        |
+| ---------------------------- | ------------------------------------- | -------------------------- |
+| `examples/classic/react`     | React + Vite                          | `yarn dev:classic:react`   |
+| `examples/classic/vue`       | Vue 3 + Vite                          | `yarn dev:classic:vue`     |
+| `examples/classic/svelte`    | Svelte 5 + Vite                       | `yarn dev:classic:svelte`  |
+| `examples/classic/vanilla`   | TypeScript + Vite                     | `yarn dev:classic:vanilla` |
+| `examples/fug/react`         | React + Vite, FUG REST transport      | `yarn dev:fug:react`       |
+| `examples/fug/vue`           | Vue 3 + Vite, FUG REST transport      | `yarn dev:fug:vue`         |
+| `examples/fug/svelte`        | Svelte 5 + Vite, FUG REST transport   | `yarn dev:fug:svelte`      |
+| `examples/fug/vanilla`       | TypeScript + Vite, FUG REST transport | `yarn dev:fug:vanilla`     |
+| `examples/fug/node`          | Node, FUG REST (control only)         | `yarn dev:fug:node`        |
+| `examples/keon-emulator-web` | React + Vite device emulator          | `yarn dev:emulator`        |
 
-  * [Adding Features or Fixes](#adding-features-or-fixes)
-  * [Running Tests](#running-tests)
-  * [Linting and Formatting](#linting-and-formatting)
-* [Publishing the SDK](#publishing-the-sdk)
-* [Contributing](#contributing)
-* [License](#license)
+For Angular, see the snippet in the [core README](packages/sdk/README.md#angular-service).
 
----
+> SDK provisioning examples use the **Web Bluetooth API** â€” browser-only
+> (Chrome/Edge/Opera, over `https://` or `localhost`). Device control over
+> WebSocket works anywhere, including Node.js. The emulator example does not
+> require physical hardware.
 
-## Prerequisites
+## Getting started
 
-* Node.js v20+ (recommended)
-* Yarn v4+ configured with `node-modules` linker
-
----
-
-## Monorepo Structure
-
-```text
-keon-wifi-sdk-react/
-+-- .yarn/               # Yarn v2+ binaries and cache
-+-- packages/
-¦   +-- sdk/             # SDK package
-¦   ¦   +-- dist/        # Compiled JS output
-¦   ¦   +-- src/         # TypeScript source files
-¦   ¦   +-- package.json
-¦   ¦   +-- tsconfig.json
-¦   +-- example/         # React example app
-¦       +-- public/
-¦       +-- src/
-¦       +-- package.json
-¦       +-- tsconfig.json
-+-- .gitignore
-+-- .yarnrc.yml          # Yarn v2+ configuration
-+-- package.json         # Root workspace config
-+-- yarn.lock
-```
-
----
-
-## Getting Started
-
-Follow these steps to install, build, and run both the SDK and the example application.
-
-### 1. Install Dependencies
-
-From the root of the repository, run:
+Requires Node.js >= 18 and Yarn 4 (via Corepack).
 
 ```bash
+corepack enable
 yarn install
+yarn build          # build core, then the react adapter
 ```
 
-This will install dependencies for both the `sdk` and the `example` packages.
-
-### 2. Build the SDK
-
-Compile the SDK source into the `dist/` folder:
+Then run any example, e.g.:
 
 ```bash
-yarn build:sdk
+yarn run dev
 ```
 
-This runs the `build` script defined in `packages/sdk/package.json`.
-
-### 3. Run the Example App
-
-Start the React development server for the example application:
+## Scripts (repo root)
 
 ```bash
-yarn start:example
+# whole repo
+yarn build        # build the packages (core -> react adapter, topological)
+yarn build:all    # build packages + all examples
+yarn lint         # lint every workspace that defines a lint script
+yarn test         # run all test suites (core + emulator)
+yarn typecheck    # type-check all packages and examples
+yarn size         # check the core bundle-size limit
+
+# run an example (builds the libs first)
+yarn dev                # the FUG React example (alias for dev:fug:react)
+yarn dev:classic:react  # ...or any other dev:classic:* / dev:fug:* / dev:emulator
+
+# a single package or example
+yarn workspace @feelrobotics/keon-wifi-sdk test
+yarn workspace keon-classic-vue build
 ```
 
-Open your browser at `http://localhost:3000` to see the example app in action.
+## Documentation
+
+- Core API, token-flow diagram, and integration examples: [`packages/sdk/README.md`](packages/sdk/README.md)
+- Keon device emulator example: [`examples/keon-emulator-web/README.md`](examples/keon-emulator-web/README.md)
+- Changelog & migration from `@feelrobotics/keon-wifi-sdk-react`: [`packages/sdk/CHANGELOG.md`](packages/sdk/CHANGELOG.md)
+- Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
+## License
+
+MIT
