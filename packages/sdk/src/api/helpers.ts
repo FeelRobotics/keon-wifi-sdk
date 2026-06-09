@@ -1,89 +1,53 @@
 import {
   getDeviceConnectionKey,
-  getOAuthServerUrl,
+  getSocketNamespace,
   getWebSocketServerUrl,
 } from './token-helpers';
-import { fetchAccessToken, getTokenValidationTime } from './oauth-api';
+import { fetchAccessToken } from './oauth-api';
 
-/**
- * Selects the best server from a list based on the minimum token validation time.
- * Requests tokens for each server and validates them.
- * @async
- * @function chooseBestServer
- * @returns {Promise<[string, Record<string, string | null>]>} - Promise resolving to a tuple:
- *   1) Best server (empty string if none are suitable),
- *   2) Object mapping each server URL to its access token.
- */
-const chooseBestServer = async (
-  feelAppsToken: string,
-  deviceConnectionKey: string | null = null
-): Promise<[string | null, string | null]> => {
-  const serverList: string[] = [
-    'https://oauth-us.feelme.com',
-    'https://oauth-eu.feelme.com',
-    'https://oauth-aus.feelme.com',
-  ];
-  const oauthServerApiUrl = process.env.REACT_APP_OAUTH_SERVER_API_URL;
-  console.log('oauthServerApiUrl:', oauthServerApiUrl);
+/** FEC OAuth server the SDK authenticates against. */
+export const DEFAULT_OAUTH_SERVER_URL = 'https://oauth-fec-us.feelme.com';
 
-  if (oauthServerApiUrl) {
-    serverList.push(oauthServerApiUrl);
+/** Base URL of the Feel Unified Gateway (FUG) REST API. */
+export const DEFAULT_FUG_BASE_URL = 'https://fug-prd.feelme.com';
+
+const buildSocketConnectionUrl = (
+  serverUrl: string | null,
+  socketNamespace: string | null
+): string | null => {
+  if (!serverUrl) {
+    return null;
   }
 
-  const serverListResults = await Promise.allSettled(
-    serverList.map(server =>
-      fetchAccessToken(server, feelAppsToken, deviceConnectionKey)
-    )
-  );
-
-  const resultsTokens: Record<string, string> = {};
-  serverList.forEach((server, index) => {
-    const result = serverListResults[index];
-    if (result.status === 'fulfilled') {
-      const [access_token] = result.value;
-      resultsTokens[server] = access_token || '';
-    }
-  });
-
-  let bestServer: string | null = null;
-  let minValidationTime = Infinity;
-  for (const [server, token] of Object.entries(resultsTokens)) {
-    if (token) {
-      try {
-        const validationTime = await getTokenValidationTime(server, token);
-        if (validationTime < minValidationTime) {
-          minValidationTime = validationTime;
-          bestServer = server;
-        }
-      } catch (error) {
-        console.error(`Failed to validate token for server: ${server}`, error);
-      }
-    }
+  const namespace = socketNamespace?.trim();
+  if (!namespace || namespace === '/') {
+    return serverUrl;
   }
 
-  if (bestServer) {
-    const accessToken = resultsTokens[bestServer];
-    return [bestServer, accessToken];
-  }
+  const normalizedNamespace = namespace.startsWith('/')
+    ? namespace
+    : `/${namespace}`;
 
-  return [null, null];
+  return `${serverUrl.replace(/\/+$/, '')}${normalizedNamespace}`;
 };
 
-const getCredentialForCcWsServer = async (
+const getCredentialForFecServer = async (
   feelAppsToken: string,
   registrationToken: string
 ): Promise<[string | null, string | null]> => {
-  const serverUrl = getOAuthServerUrl(registrationToken);
   const deviceConnectionKey = getDeviceConnectionKey(registrationToken);
   const socketServerUrl = getWebSocketServerUrl(registrationToken);
+  const socketNamespace = getSocketNamespace(registrationToken);
 
-  const [accessToken, refreshToken] = await fetchAccessToken(
-    serverUrl,
+  const [accessToken] = await fetchAccessToken(
     feelAppsToken,
     deviceConnectionKey
   );
 
-  return [socketServerUrl, accessToken];
+  return [
+    buildSocketConnectionUrl(socketServerUrl, socketNamespace),
+    accessToken,
+  ];
 };
 
-export { chooseBestServer, getCredentialForCcWsServer };
+export { getCredentialForFecServer };

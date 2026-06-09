@@ -7,29 +7,36 @@ const getTokenPayload = <T = any>(token: string): T | null => {
     return null;
   }
 
-  return jwtDecode<T>(token);
+  try {
+    return jwtDecode<T>(token);
+  } catch {
+    return null;
+  }
 };
 
-const isTokenValid = (token: string | null | undefined): boolean => {
+/**
+ * Checks whether a JWT is still fresh enough for local SDK reuse.
+ *
+ * This is not cryptographic validation: it does not verify the token signature,
+ * issuer, audience, or algorithm. Server-side endpoints remain the authority.
+ */
+const isTokenFreshEnough = (token: string | null | undefined): boolean => {
   if (!token) {
     return false;
   }
 
   const decodedToken = getTokenPayload<TokenPayload>(token);
-  if (decodedToken && decodedToken.exp) {
-    const halfwayExpiration = new Date(
-      decodedToken.exp * 1000 -
-      (decodedToken.exp * 1000 -
-        (decodedToken.iat || decodedToken.exp) * 1000) /
-      2
-    );
-    const currentTime = new Date(new Date().toISOString());
-
-    if (currentTime > halfwayExpiration) {
-      return false;
-    }
+  if (!decodedToken || typeof decodedToken.exp !== 'number') {
+    return false;
   }
-  return true;
+
+  const issuedAt =
+    typeof decodedToken.iat === 'number' ? decodedToken.iat : decodedToken.exp;
+  const expirationTime = decodedToken.exp * 1000;
+  const issuedTime = issuedAt * 1000;
+  const halfwayExpiration = expirationTime - (expirationTime - issuedTime) / 2;
+
+  return Date.now() <= halfwayExpiration;
 };
 
 const getRegistrationTokenData = (
@@ -46,6 +53,14 @@ const getWebSocketServerUrl = (token: string): string | null => {
   const tokenData = getRegistrationTokenData(token);
   if (tokenData) {
     return tokenData.wss_cc_server_url;
+  }
+  return null;
+};
+
+const getSocketNamespace = (token: string): string | null => {
+  const tokenData = getRegistrationTokenData(token);
+  if (tokenData) {
+    return tokenData.socket_ns ?? null;
   }
   return null;
 };
@@ -69,6 +84,7 @@ const getDeviceConnectionKey = (token: string): string | null => {
 export {
   getOAuthServerUrl,
   getDeviceConnectionKey,
+  getSocketNamespace,
   getWebSocketServerUrl,
-  isTokenValid,
+  isTokenFreshEnough,
 };

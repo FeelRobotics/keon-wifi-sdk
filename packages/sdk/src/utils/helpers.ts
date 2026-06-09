@@ -1,6 +1,6 @@
-const tranformDataToArray = (
+const transformDataToArray = (
   arr: Array<number> | ArrayBuffer | string
-): Uint8Array => {
+): Uint8Array<ArrayBuffer> => {
   let buffer: ArrayBuffer;
 
   if (Array.isArray(arr)) {
@@ -35,7 +35,7 @@ const displayToken = (token: string | null = null): string => {
   return `${first20}...${last10}`;
 };
 
-export { tranformDataToArray, displayToken };
+export { transformDataToArray, displayToken };
 /**
  * Reads data from a DataView and returns an ASCII string
  * if all bytes are within the printable ASCII range (32..126).

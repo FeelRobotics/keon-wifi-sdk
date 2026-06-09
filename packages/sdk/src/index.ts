@@ -1,106 +1,96 @@
+/// <reference types="web-bluetooth" />
+
 import { getDeviceConnectionKey } from './api/token-helpers';
-import { chooseBestServer, getCredentialForCcWsServer } from './api/helpers';
-import { fetchRegistrationToken } from './api/oauth-api';
 
-import Keon from './ble/KeonWiFi';
-import { KeonManager, KeonManagerOptions } from './socketio/keonManager';
+import { fetchAccessToken, fetchRegistrationToken } from './api/oauth-api';
+import { AuthError } from './errors';
+import { TokenResult } from './core/types';
 
-const getTokenForKeonWiFi = async (
+/**
+ * Authenticates with the OAuth server and returns the tokens needed to
+ * provision and control a device. Transport-agnostic.
+ *
+ * @param feelAppsToken Partner access token issued by FeelRobotics.
+ * @param deviceConnectionKey Optional key from a previous session to re-associate the same device.
+ * @throws {AuthError} when authentication or token retrieval fails.
+ */
+export async function getTokenForKeonWiFi(
   feelAppsToken: string,
   deviceConnectionKey: string | null = null
-): Promise<[string | null, string | null]> => {
-  const [bestServer, accessToken] = await chooseBestServer(
-    feelAppsToken,
-    deviceConnectionKey
-  );
-
-  if (!bestServer || !accessToken) {
-    return [null, null];
-  }
-
-  const registrationToken = await fetchRegistrationToken(
-    bestServer,
-    accessToken
-  );
-
-  const newDeviceConnectionKey = getDeviceConnectionKey(accessToken);
-
-  return [registrationToken, newDeviceConnectionKey];
-};
-
-async function keonConnect(keon: Keon) {
-  let device;
-
+): Promise<TokenResult> {
+  let accessToken: string | null;
   try {
-    device = await navigator.bluetooth.requestDevice(Keon.requestDeviceOptions);
+    [accessToken] = await fetchAccessToken(feelAppsToken, deviceConnectionKey);
   } catch (error) {
-    console.error(error);
-    return null;
+    throw new AuthError('Failed to authenticate with the Keon OAuth server', {
+      cause: error,
+    });
   }
-  const characteristicsData = await keon.connect(device);
-  return characteristicsData;
-}
 
-async function keonProvisioning(
-  keon: Keon,
-  registrationToken: string,
-  ssid: string,
-  password: string
-) {
+  if (!accessToken) {
+    throw new AuthError('Failed to authenticate with the Keon OAuth server');
+  }
+
+  let registrationToken: string | null;
+  try {
+    registrationToken = await fetchRegistrationToken(accessToken);
+  } catch (error) {
+    throw new AuthError('Failed to obtain a registration token', {
+      cause: error,
+    });
+  }
   if (!registrationToken) {
-    console.error('Please login to the server first!');
-    return;
+    throw new AuthError('Failed to obtain a registration token');
   }
-  if (!ssid || !password) {
-    console.error('Please fill WiFi credentials first!');
-    return;
-  }
-  if (!keon.isConnected) {
-    console.error('Please connect to the device first!');
-    return;
-  }
+
+  let newDeviceConnectionKey: string | null;
   try {
-    await keon.provisioning(ssid, password, registrationToken);
-    await keon.disconnect();
+    newDeviceConnectionKey = getDeviceConnectionKey(accessToken);
   } catch (error) {
-    console.error(error);
+    throw new AuthError(
+      'Registration token is missing a device connection key',
+      { cause: error }
+    );
   }
+  if (!newDeviceConnectionKey) {
+    throw new AuthError(
+      'Registration token is missing a device connection key'
+    );
+  }
+
+  return { registrationToken, deviceConnectionKey: newDeviceConnectionKey };
 }
 
-const provisioningKeonWiFi = async (
-  registrationToken: string,
-  ssid: string,
-  password: string
-): Promise<[Keon, any]> => {
-  let keon = new Keon();
-  const deviceData = await keonConnect(keon);
-  await keonProvisioning(keon, registrationToken, ssid, password);
-  return [keon, deviceData];
-};
+// Transport managers — one per communication channel, all KeonControllers.
+export { BleManager } from './managers/BleManager';
+export { WifiManager } from './managers/WifiManager';
+export { FugManager } from './managers/FugManager';
+export type { FugConnectOptions } from './managers/FugManager';
 
-const keonWiFiManager = async (
-  feelAppsToken: string,
-  registrationToken: string,
-  userActionHandler: (message: any) => void
-) => {
-  const [socketServerUrl, accessToken] = await getCredentialForCcWsServer(
-    feelAppsToken,
-    registrationToken
-  );
-  if (!socketServerUrl || !accessToken) {
-    throw new Error('Tokens incorrect or not found');
-  }
+// Pluggable device drivers.
+export type { KeonDeviceDriver } from './devices/types';
 
-  return new KeonManager({
-    socketServerUrl,
-    accessToken,
-    userActionHandler,
-  });
-};
-
+export { isTokenFreshEnough } from './api/token-helpers';
 export {
-  getTokenForKeonWiFi,
-  provisioningKeonWiFi,
-  keonWiFiManager,
-  KeonManager,
-};
+  KeonError,
+  AuthError,
+  KeonBLEError,
+  KeonProvisioningError,
+} from './errors';
+export type {
+  KeonTransport,
+  KeonController,
+  RemoteController,
+  BleController,
+  TokenResult,
+  DeviceInfo,
+  KeonDeviceStatus,
+  KeonBlePosition,
+  KeonProvisioningEvent,
+  KeonProvisioningEventSource,
+  KeonProvisioningOptions,
+  KeonProvisioningStage,
+  KeonProvisioningStatus,
+  RemoteCallbacks,
+  BleCallbacks,
+} from './core/types';

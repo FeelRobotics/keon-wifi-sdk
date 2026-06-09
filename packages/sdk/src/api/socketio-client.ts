@@ -47,10 +47,6 @@ class SocketClient {
     this.socket.on('connect_error', (error: any) => {
       onError(error);
     });
-
-    this.socket.on('disconnect', (reason: string) => {
-      console.log(`Disconnected: ${reason}`);
-    });
   }
 
   sendMessage(event: string, message: any): void {
@@ -76,9 +72,7 @@ interface SocketIOClientOptions {
 const socketIOClient = async (options: SocketIOClientOptions) => {
   const { serverUrl, token, onDeviceStatus, onUserActivity } = options;
 
-  const onMessage = (message: any) => {
-    console.debug('Received message:', message);
-  };
+  const onMessage = () => {};
 
   const onError = (error: any) => {
     console.error('Socket error:', error);

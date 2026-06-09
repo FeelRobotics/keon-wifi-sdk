@@ -1,16 +1,43 @@
 {
+  "name": "keon-wifi-sdk-monorepo",
   "private": true,
   "license": "MIT",
+  "packageManager": "yarn@4.15.0",
   "workspaces": [
     "packages/sdk",
-    "packages/example"
+    "packages/react",
+    "examples/keon-emulator-web",
+    "examples/classic/*",
+    "examples/fug/*"
   ],
   "scripts": {
-    "build:sdk": "yarn workspace @feelrobotics/keon-wifi-sdk-react run build",
-    "start:example": "yarn workspace keon-wifi-sdk-example run start"
+    "build": "yarn workspaces foreach -Apt --include '@feelrobotics/*' run build",
+    "build:all": "yarn workspaces foreach -Apt --exclude keon-wifi-sdk-monorepo run build",
+    "build:sdk": "yarn workspace @feelrobotics/keon-wifi-sdk run build",
+    "build:react": "yarn workspace @feelrobotics/keon-wifi-sdk-react run build",
+    "lint": "yarn workspaces foreach -Ap --exclude keon-wifi-sdk-monorepo run lint",
+    "typecheck": "yarn workspaces foreach -Ap --exclude keon-wifi-sdk-monorepo run typecheck",
+    "test": "yarn workspaces foreach -Ap --exclude keon-wifi-sdk-monorepo run test",
+    "size": "yarn workspace @feelrobotics/keon-wifi-sdk run size",
+    "dev": "yarn dev:fug:react",
+    "dev:fug:react": "yarn build && yarn workspace keon-fug-react dev",
+    "dev:fug:vue": "yarn build && yarn workspace keon-fug-vue dev",
+    "dev:fug:svelte": "yarn build && yarn workspace keon-fug-svelte dev",
+    "dev:fug:vanilla": "yarn build && yarn workspace keon-fug-vanilla dev",
+    "dev:fug:node": "yarn build && yarn workspace keon-fug-node start",
+    "dev:classic:react": "yarn build && yarn workspace keon-classic-react dev",
+    "dev:classic:vue": "yarn build && yarn workspace keon-classic-vue dev",
+    "dev:classic:svelte": "yarn build && yarn workspace keon-classic-svelte dev",
+    "dev:classic:vanilla": "yarn build && yarn workspace keon-classic-vanilla dev",
+    "dev:emulator": "yarn workspace keon-emulator-web dev",
+    "prepare": "husky"
   },
-  "packageManager": "yarn@4.9.1",
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.3",
     "tslib": "^2.8.1"
   }
 }

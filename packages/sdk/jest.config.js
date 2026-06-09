@@ -1,9 +1,9 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
+  coverageReporters: ['text', 'json-summary', 'lcov'],
 };

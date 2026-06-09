@@ -21,6 +21,7 @@ export interface TokenPayload<T = unknown> extends JwtPayload {
 export interface RegistrationTokenData {
   oauth_server_url: string;
   wss_cc_server_url: string;
+  socket_ns?: string;
   exchange_endpoint: string;
   refresh_endpoint: string;
 }

@@ -1,0 +1,66 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Configure this environment in repo settings with required reviewers so a
+    # tag push alone cannot publish without an approval step.
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write # required for npm provenance
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install
+        run: yarn install --immutable
+
+      - name: Check tag matches package versions
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          for ws in packages/sdk packages/react; do
+            V="$(node -p "require('./$ws/package.json').version")"
+            if [ "$V" != "$TAG" ]; then
+              echo "::error::$ws is at version $V but the tag is $TAG"
+              exit 1
+            fi
+          done
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      # NPM_TOKEN must be a granular automation token scoped to exactly these
+      # two packages, with an expiry date.
+      - name: Publish core
+        run: yarn workspace @feelrobotics/keon-wifi-sdk npm publish --access public --provenance
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish react adapter
+        run: yarn workspace @feelrobotics/keon-wifi-sdk-react npm publish --access public --provenance
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
