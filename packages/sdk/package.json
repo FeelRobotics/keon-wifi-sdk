@@ -88,7 +88,7 @@
     }
   ],
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^11.2.0",
+    "@size-limit/preset-small-lib": "^12.1.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.15.18",
     "@types/web-bluetooth": "^0.0.21",
