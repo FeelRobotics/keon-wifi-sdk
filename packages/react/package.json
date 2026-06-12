@@ -79,6 +79,6 @@
     "react": "^19.1.0",
     "tslib": "^2.8.1",
     "tsup": "^8.3.5",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.3"
   }
 }
