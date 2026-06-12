@@ -2432,16 +2432,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.3.7":
-  version: 18.3.7
-  resolution: "@types/react-dom@npm:18.3.7"
-  peerDependencies:
-    "@types/react": ^18.0.0
-  checksum: 10c0/8bd309e2c3d1604a28a736a24f96cbadf6c05d5288cfef8883b74f4054c961b6b3a5e997fd5686e492be903c8f3380dba5ec017eff3906b1256529cd2d39603e
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:^19.1.1":
+"@types/react-dom@npm:^19.2.3":
   version: 19.2.3
   resolution: "@types/react-dom@npm:19.2.3"
   peerDependencies:
@@ -5704,10 +5695,10 @@ __metadata:
   dependencies:
     "@feelrobotics/keon-wifi-sdk-react": "workspace:*"
     "@types/react": "npm:^19.1.0"
-    "@types/react-dom": "npm:^19.1.1"
+    "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^4.3.4"
     react: "npm:^19.1.0"
-    react-dom: "npm:^19.1.0"
+    react-dom: "npm:^19.2.7"
     typescript: "npm:^6.0.3"
     vite: "npm:^6.0.0"
   languageName: unknown
@@ -5759,7 +5750,7 @@ __metadata:
     "@testing-library/react": "npm:^16.3.2"
     "@testing-library/user-event": "npm:^14.6.1"
     "@types/react": "npm:^18.3.29"
-    "@types/react-dom": "npm:^18.3.7"
+    "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^4.7.0"
     "@vitest/coverage-v8": "npm:^3.2.6"
     eslint: "npm:^9.39.4"
@@ -5767,7 +5758,7 @@ __metadata:
     msw: "npm:^2.14.6"
     prettier: "npm:^3.8.3"
     react: "npm:^18.3.1"
-    react-dom: "npm:^18.3.1"
+    react-dom: "npm:^19.2.7"
     socket.io-client: "npm:^4.8.3"
     typescript: "npm:^6.0.3"
     typescript-eslint: "npm:^8.59.4"
@@ -5795,10 +5786,10 @@ __metadata:
     "@feelrobotics/keon-wifi-sdk": "workspace:*"
     "@feelrobotics/keon-wifi-sdk-react": "workspace:*"
     "@types/react": "npm:^19.1.0"
-    "@types/react-dom": "npm:^19.1.1"
+    "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^4.3.4"
     react: "npm:^19.1.0"
-    react-dom: "npm:^19.1.0"
+    react-dom: "npm:^19.2.7"
     typescript: "npm:^6.0.3"
     vite: "npm:^6.0.0"
   languageName: unknown
@@ -6732,19 +6723,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.3.1":
-  version: 18.3.1
-  resolution: "react-dom@npm:18.3.1"
-  dependencies:
-    loose-envify: "npm:^1.1.0"
-    scheduler: "npm:^0.23.2"
-  peerDependencies:
-    react: ^18.3.1
-  checksum: 10c0/a752496c1941f958f2e8ac56239172296fcddce1365ce45222d04a1947e0cc5547df3e8447f855a81d6d39f008d7c32eab43db3712077f09e3f67c4874973e85
-  languageName: node
-  linkType: hard
-
-"react-dom@npm:^19.1.0":
+"react-dom@npm:^19.2.7":
   version: 19.2.7
   resolution: "react-dom@npm:19.2.7"
   dependencies:
@@ -7010,15 +6989,6 @@ __metadata:
   dependencies:
     xmlchars: "npm:^2.2.0"
   checksum: 10c0/3847b839f060ef3476eb8623d099aa502ad658f5c40fd60c105ebce86d244389b0d76fcae30f4d0c728d7705ceb2f7e9b34bb54717b6a7dbedaf5dad2d9a4b74
-  languageName: node
-  linkType: hard
-
-"scheduler@npm:^0.23.2":
-  version: 0.23.2
-  resolution: "scheduler@npm:0.23.2"
-  dependencies:
-    loose-envify: "npm:^1.1.0"
-  checksum: 10c0/26383305e249651d4c58e6705d5f8425f153211aef95f15161c151f7b8de885f24751b377e4a0b3dd42cce09aad3f87a61dab7636859c0d89b7daf1a1e2a5c78
   languageName: node
   linkType: hard
 
