@@ -1,6 +1,6 @@
 {
   "name": "@feelrobotics/keon-wifi-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Framework-agnostic SDK for provisioning and controlling Keon WiFi devices over Bluetooth LE and WebSocket.",
   "repository": {
     "type": "git",

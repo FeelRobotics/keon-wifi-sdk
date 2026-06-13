@@ -1,22 +1,26 @@
 # Keon WiFi SDK — Vanilla (Vite + TS) example
 
-Full browser flow using the core SDK directly (no framework): authenticate →
-provision over Bluetooth → connect → control, with live status via
-`onStatusChange`.
+Browser BLE-provisioning + real-time WiFi flow using the core SDK directly (no
+framework): authenticate → provision over Bluetooth → connect → control, with
+live status via `onStatusChange`.
 
-> Provisioning requires the Web Bluetooth API — use Chrome/Edge/Opera over
+> This is the in-browser fallback path. End users normally put their device on
+> WiFi with the FeelConnect app; for control-only integrations prefer the
+> `examples/fug/*` (REST) examples.
+
+> Provisioning requires the Web Bluetooth API — Chrome/Edge/Opera over
 > `https://` or `localhost`.
 
 ## Run
 
 ```sh
-yarn install      # from the repo root
-yarn dev:vanilla  # builds the libs, then starts the example
+yarn install             # from the repo root
+yarn dev:classic:vanilla # builds the libs, then starts the example
 ```
 
 ## Flow
 
-1. **Authenticate** — enter your Partner Key + User ID and click _Authenticate_.
+1. **Authenticate** — enter the Partner Key + User ID and click _Authenticate_.
    A new tab opens with the partner token; copy it and paste it into the **Token**
    field, then **Submit Token**. This example flow simulates server-to-server
    token issuance; production browser apps should obtain the partner token from

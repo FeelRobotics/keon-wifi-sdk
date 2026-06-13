@@ -1,6 +1,6 @@
 {
   "name": "@feelrobotics/keon-wifi-sdk-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React hook for the Keon WiFi SDK — provision and control Keon WiFi devices.",
   "repository": {
     "type": "git",

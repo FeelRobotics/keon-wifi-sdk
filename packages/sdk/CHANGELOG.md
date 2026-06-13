@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- docs: update and align documentation
+
 ## 1.0.0
 
 Initial release of the **framework-agnostic** core SDK, split out from

@@ -1,14 +1,6 @@
 # Keon Device Emulator Web
 
-A single-page TypeScript web application that simulates a physical Kiiroo Keon device for partner integration testing with the FeelMe infrastructure.
-
-## Framework Choice
-
-**React + Vite** — chosen because:
-- Component separation maps naturally to the three-panel layout.
-- Zustand provides lightweight reactive state without boilerplate.
-- React Testing Library + Vitest gives mature, deterministic test infrastructure.
-- Vite's HMR makes iterative development fast.
+A single-page TypeScript web application that simulates a physical Kiiroo Keon device for partner integration testing with the FeelTechnologies infrastructure.
 
 No framework-specific routing or server-side rendering is needed; the app is a pure client-side SPA.
 
@@ -19,67 +11,48 @@ No framework-specific routing or server-side rendering is needed; the app is a p
 From the monorepo root:
 
 ```bash
-Copy-Item examples/keon-emulator-web/env.example examples/keon-emulator-web/.env
-# Fill in your Cognito + endpoint values in .env
-
 yarn install
 yarn dev:emulator   # or: yarn workspace keon-emulator-web dev
 ```
 
 ---
 
-## Environment Variables
-
-All variables are prefixed with `VITE_` (Vite exposes them to the browser bundle).
-
-| Variable | Default production value | Description |
-|---|---|---|
-| `VITE_COGNITO_REGION` | — | AWS region of the Cognito User Pool (e.g. `us-east-1`) |
-| `VITE_COGNITO_CLIENT_ID` | — | Cognito App Client ID (no client secret required) |
-| `VITE_OAUTH_SERVER_URL` | `https://oauth-fec-us.feelme.com` | FeelMe OAuth server base URL |
-| `VITE_FEC_SERVER_URL` | `https://fec.feelme.com` | FeelExchangeCenter WebSocket URL |
-
-Other production endpoints available in `pyproject.toml` of FeelmeOAuthServer:
-- EU: `https://oauth-eu.feelme.com`
-- AUS: `https://oauth-aus.feelme.com`
-- Staging: `https://stg-oauth.feelme.com`
-
-FEC staging: `https://fec-stg.feelme.com`
-
----
-
 ## Build & Deploy
 
 ### HTTPS production bundle (deploy to server)
+
 ```bash
 yarn workspace keon-emulator-web build
 # Output: dist/
 ```
+
 Deploy `dist/` behind an HTTPS-capable web server (nginx, Caddy, AWS CloudFront, etc.).
 
 ### Local / offline bundle (no server required)
+
 ```bash
 yarn workspace keon-emulator-web build:local
 # Output: dist-local/
 npx serve dist-local
 ```
+
 Uses relative asset paths so the HTML file can be opened directly or served from any directory.
 
 ---
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `yarn workspace keon-emulator-web dev` | Vite dev server with HMR |
-| `yarn workspace keon-emulator-web build` | Type-check + production bundle → `dist/` |
-| `yarn workspace keon-emulator-web build:local` | Type-check + local bundle → `dist-local/` (base `./`) |
-| `yarn workspace keon-emulator-web preview` | Preview production bundle locally |
-| `yarn workspace keon-emulator-web test` | Run all Vitest unit tests |
-| `yarn workspace keon-emulator-web test:coverage` | Run tests with V8 coverage report |
-| `yarn workspace keon-emulator-web lint` | ESLint (flat config) |
-| `yarn workspace keon-emulator-web typecheck` | TypeScript strict type-check (no emit) |
-| `yarn workspace keon-emulator-web format` | Prettier format all files |
+| Command                                          | Description                                           |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| `yarn workspace keon-emulator-web dev`           | Vite dev server with HMR                              |
+| `yarn workspace keon-emulator-web build`         | Type-check + production bundle → `dist/`              |
+| `yarn workspace keon-emulator-web build:local`   | Type-check + local bundle → `dist-local/` (base `./`) |
+| `yarn workspace keon-emulator-web preview`       | Preview production bundle locally                     |
+| `yarn workspace keon-emulator-web test`          | Run all Vitest unit tests                             |
+| `yarn workspace keon-emulator-web test:coverage` | Run tests with V8 coverage report                     |
+| `yarn workspace keon-emulator-web lint`          | ESLint (flat config)                                  |
+| `yarn workspace keon-emulator-web typecheck`     | TypeScript strict type-check (no emit)                |
+| `yarn workspace keon-emulator-web format`        | Prettier format all files                             |
 
 ---
 
@@ -162,12 +135,6 @@ Received by emulator (device role):
 
 ---
 
-## Screenshots
-
-_Add screenshots here after first successful provisioning._
-
----
-
 ## Testing
 
 ```bash
@@ -177,6 +144,7 @@ yarn workspace keon-emulator-web test:coverage
 ```
 
 Test files are in `tests/`:
+
 - `appConfig.test.ts` — Vite env to runtime config mapping
 - `position.test.ts` — pure math + KEON parser
 - `jwtDecode.test.ts` — JWT decode without verify
