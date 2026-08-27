@@ -1,6 +1,5 @@
 import {
   transformDataToArray,
-  displayToken,
   dataViewToAsciiString,
 } from '../src/utils/helpers';
 
@@ -28,22 +27,5 @@ describe('dataViewToAsciiString', () => {
   it('returns empty string when any byte is non-printable', () => {
     const dv = new DataView(new Uint8Array([72, 0]).buffer);
     expect(dataViewToAsciiString(dv)).toBe('');
-  });
-});
-
-describe('displayToken', () => {
-  it('returns empty string for null', () => {
-    expect(displayToken(null)).toBe('');
-  });
-
-  it('returns short tokens unchanged', () => {
-    expect(displayToken('short')).toBe('short');
-  });
-
-  it('masks the middle of long tokens', () => {
-    const token = 'a'.repeat(40);
-    const masked = displayToken(token);
-    expect(masked).toContain('...');
-    expect(masked.length).toBeLessThan(token.length);
   });
 });

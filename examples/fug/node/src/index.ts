@@ -5,8 +5,8 @@ import { FugManager, KeonError } from "@feelrobotics/keon-wifi-sdk";
 // clearest demonstration of controlling an already-provisioned device from a
 // server, a CI job, or any Node backend.
 //
-// Get a deviceConnectionKey by provisioning the device first (the FeelConnect
-// app, or a classic browser example), then pass it here.
+// Get a deviceConnectionKey by setting the device up in the FeelConnect app
+// first, then pass it here.
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {

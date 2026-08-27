@@ -32,9 +32,9 @@ Aggregate scripts use `yarn workspaces foreach`, which auto-discovers workspaces
 and skips those without the given script.
 
 Per-workspace: `yarn workspace <name> run <script>` (e.g.
-`yarn workspace keon-classic-vue build`). To run an example end-to-end use the
-`dev:*` scripts (`dev:classic:<stack>`, `dev:fug:<stack>`, `dev:emulator`) — they
-build the libraries first, then start the app.
+`yarn workspace keon-fug-vue build`). To run an example end-to-end use the
+`dev:*` scripts (`dev:fug:<stack>`, `dev:emulator`) — they build the libraries
+first, then start the app.
 
 > `yarn build` is topologically ordered, so the core is always built before the
 > react adapter.

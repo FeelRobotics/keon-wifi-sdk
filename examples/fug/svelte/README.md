@@ -7,7 +7,7 @@ Unified Gateway (FUG) REST transport. It exercises every device command:
 optional polling).
 
 Provisioning is **out of scope** — it needs Web Bluetooth and is handled by the
-**FeelConnect** app (or a `classic/` browser example), which give you a
+**FeelConnect** app, which gives you a
 `deviceConnectionKey` to paste here.
 
 ## Run

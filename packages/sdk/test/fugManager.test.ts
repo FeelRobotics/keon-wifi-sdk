@@ -58,7 +58,7 @@ describe('FugManager', () => {
     expect(onStatusChange).not.toHaveBeenCalled();
   });
 
-  it('reports poller failures through onError', async () => {
+  it('swallows poller failures instead of reporting them through onError', async () => {
     jest.useFakeTimers();
     const onError = jest.fn();
     const mgr = await connect({ onError, statusPollIntervalSec: 1 });
@@ -70,7 +70,9 @@ describe('FugManager', () => {
 
     await jest.advanceTimersByTimeAsync(1000);
 
-    expect(onError).toHaveBeenCalledWith(expect.any(KeonError));
+    // Only the initial fetch in connect() surfaces errors; a failing poll tick
+    // is deliberately silent, so a dead device reads as "no status update".
+    expect(onError).not.toHaveBeenCalled();
     await mgr.disconnect();
     jest.useRealTimers();
   });

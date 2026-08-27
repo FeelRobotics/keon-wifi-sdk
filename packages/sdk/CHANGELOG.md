@@ -1,5 +1,37 @@
 # Changelog
 
+## 2.0.0
+
+WiFi provisioning moved out of the SDK — setting a device up on WiFi is now done
+with the **FeelConnect** app, which provides the `deviceConnectionKey`. The SDK
+focuses on **controlling** already-configured devices.
+
+### BREAKING CHANGES
+
+- Removed `BleController.provision()` and the whole BLE WiFi-provisioning flow.
+- Removed the provisioning types: `KeonProvisioningEvent`,
+  `KeonProvisioningEventSource`, `KeonProvisioningOptions`,
+  `KeonProvisioningStage`, `KeonProvisioningStatus`.
+- Removed the `KeonProvisioningError` error class.
+- `BleDeviceProfile` no longer has `provCharUuid` and `provisioning` fields
+  (affects custom `KeonDeviceDriver` implementations).
+
+### Added
+
+- **ONYX ULTRA** device driver (shares KEON2's BLE service; matched by the
+  advertised Bluetooth name).
+- `BleController.driverName` — name of the driver that matched the connected
+  device.
+- `@types/web-bluetooth` is now a runtime dependency so the public types
+  resolve for consumers without extra installs.
+
+### Fixed
+
+- The BLE position-notification listener is removed on `disconnect()` (was
+  leaking).
+- Internal OAuth helper no longer logs request arguments (which included the
+  `Authorization` header) when the server URL is missing.
+
 ## 1.0.0
 
 Initial release of the **framework-agnostic** core SDK, split out from

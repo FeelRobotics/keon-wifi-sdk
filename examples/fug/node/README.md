@@ -6,8 +6,8 @@ just a `deviceConnectionKey` and HTTP. This is the clearest demonstration that
 the SDK can drive a device from a server, a CI job, or any backend.
 
 > Provisioning is **out of scope** here — it needs the Web Bluetooth API and is
-> browser-only. Provision the device with the **FeelConnect** app (or a
-> `classic/` browser example) to obtain a `deviceConnectionKey`, then pass it in.
+> browser-only. Provision the device with the **FeelConnect** app to obtain a
+> `deviceConnectionKey`, then pass it in.
 
 ## Run
 

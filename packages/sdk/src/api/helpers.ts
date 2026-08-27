@@ -1,5 +1,6 @@
 import {
   getDeviceConnectionKey,
+  getOAuthServerUrl,
   getSocketNamespace,
   getWebSocketServerUrl,
 } from './token-helpers';
@@ -38,8 +39,11 @@ const getCredentialForFecServer = async (
   const deviceConnectionKey = getDeviceConnectionKey(registrationToken);
   const socketServerUrl = getWebSocketServerUrl(registrationToken);
   const socketNamespace = getSocketNamespace(registrationToken);
+  const oauthServerUrl =
+    getOAuthServerUrl(registrationToken) ?? DEFAULT_OAUTH_SERVER_URL;
 
   const [accessToken] = await fetchAccessToken(
+    oauthServerUrl,
     feelAppsToken,
     deviceConnectionKey
   );

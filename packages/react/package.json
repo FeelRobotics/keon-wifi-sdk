@@ -1,7 +1,7 @@
 {
   "name": "@feelrobotics/keon-wifi-sdk-react",
-  "version": "1.0.0",
-  "description": "React hook for the Keon WiFi SDK — provision and control Keon WiFi devices.",
+  "version": "2.0.0",
+  "description": "React hook for the Keon WiFi SDK — connect to and control Keon WiFi devices.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FeelRobotics/keon-wifi-sdk.git",
@@ -62,8 +62,7 @@
     "react",
     "hook",
     "bluetooth",
-    "wifi",
-    "provisioning"
+    "wifi"
   ],
   "dependencies": {
     "@feelrobotics/keon-wifi-sdk": "workspace:^"
@@ -73,9 +72,9 @@
   },
   "devDependencies": {
     "@types/react": "^19.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "eslint": "^10.0.1",
     "react": "^19.1.0",
     "tslib": "^2.8.1",
     "tsup": "^8.3.5",

@@ -1,8 +1,4 @@
-import {
-  DRIVERS,
-  matchDriver,
-  requestDeviceOptions,
-} from '../src/devices';
+import { DRIVERS, matchDriver, requestDeviceOptions } from '../src/devices';
 import { keon2 } from '../src/devices/keon2';
 import { keonWifi } from '../src/devices/keonWifi';
 
@@ -25,7 +21,8 @@ describe('device registry', () => {
     };
 
     expect(options.filters).toEqual(DRIVERS.map((d) => ({ name: d.name })));
-    expect(options.optionalServices).toEqual([0x1900, 0x1400]);
+    // ONYX ULTRA shares KEON2's service UUID, so 0x1400 appears twice.
+    expect(options.optionalServices).toEqual([0x1900, 0x1400, 0x1400]);
   });
 });
 

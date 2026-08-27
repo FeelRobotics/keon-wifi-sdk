@@ -18,8 +18,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    // use Node's module resolution algorithm, instead of the legacy TS one
-    "moduleResolution": "node",
+    // modern resolution honouring package.json "exports"; replaces the
+    // deprecated node10 algorithm, removed in TypeScript 7
+    "moduleResolution": "bundler",
+    // tsup's dts builder hardcodes `baseUrl`, which TS 6 reports as deprecated.
+    // Remove this once tsup stops injecting it.
+    "ignoreDeprecations": "6.0",
     // transpile JSX to React.createElement
     "jsx": "react",
     // interop between ESM and CJS modules. Recommended by TS
@@ -30,6 +34,6 @@
     // error out if import and file system have a casing mismatch. Recommended by TS
     "forceConsistentCasingInFileNames": true,
     // `tsdx build` ignores this option, but it is commonly used when type-checking separately with `tsc`
-    "noEmit": true,
+    "noEmit": true
   }
 }

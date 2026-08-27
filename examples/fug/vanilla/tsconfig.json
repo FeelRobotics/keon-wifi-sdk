@@ -10,7 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "types": ["vite/client"],
-    "baseUrl": ".",
     "paths": {
       "@feelrobotics/keon-wifi-sdk": ["../../../packages/sdk/src/index.ts"]
     }

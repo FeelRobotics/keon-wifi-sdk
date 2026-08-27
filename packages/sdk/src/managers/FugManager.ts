@@ -14,8 +14,8 @@ export interface FugConnectOptions extends RemoteCallbacks {
   /**
    * How often to poll device status, in **seconds** (emits onStatusChange).
    * Defaults to {@link DEFAULT_STATUS_POLL_INTERVAL_SEC}. Set to `0` to disable
-   * polling. {@link FugManager.connect} performs one initial status fetch
-   * regardless of this setting.
+   * polling. Call {@link FugManager.forceStatusReport} after connecting if you
+   * need the initial status before the first poll fires.
    */
   statusPollIntervalSec?: number;
 }
@@ -64,12 +64,10 @@ export class FugManager extends RemoteManager {
     }
 
     const manager = new FugManager(deviceConnectionKey, callbacks);
-    // Surface an invalid/expired key immediately instead of waiting for the
-    // first poll tick (or never, when polling is disabled).
     await manager.forceStatusReport().catch((err) => manager.emitError(err));
     if (statusPollIntervalSec > 0) {
       manager.pollTimer = setInterval(() => {
-        void manager.forceStatusReport().catch((err) => manager.emitError(err));
+        void manager.forceStatusReport().catch(() => {});
       }, statusPollIntervalSec * 1000);
     }
     return manager;

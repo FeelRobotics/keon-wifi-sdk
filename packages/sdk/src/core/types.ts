@@ -7,14 +7,14 @@ export type KeonTransport = 'ble' | 'wifi' | 'fug';
  * Result of {@link getTokenForKeonWiFi}.
  */
 export interface TokenResult {
-  /** Registration token used to provision the device over BLE. */
+  /** Registration token used to connect the WiFi (Socket.IO) transport. */
   registrationToken: string;
   /** Key that persists the device association across sessions. */
   deviceConnectionKey: string;
 }
 
 /**
- * Information read from a device during BLE connection/provisioning.
+ * Information read from a device during the BLE connection.
  */
 export interface DeviceInfo {
   /** Bluetooth device id. */
@@ -51,72 +51,6 @@ export interface KeonBlePosition {
   position: number;
   /** Speed, when reported; 0 otherwise. */
   speed: number;
-}
-
-/** Provisioning handshake stage reported while writing WiFi credentials. */
-export type KeonProvisioningStage =
-  | 'clean-list'
-  | 'change-mode-wifi'
-  | 'start'
-  | 'ssid'
-  | 'password'
-  | 'token'
-  | 'cred-confirm'
-  | 'post-provision';
-
-/** Status state decoded from the BLE provisioning characteristic. */
-export type KeonProvisioningStatus =
-  | 'pending'
-  | 'ongoing'
-  | 'success'
-  | 'failed'
-  | 'unknown';
-
-/** Origin of a provisioning status event. */
-export type KeonProvisioningEventSource =
-  | 'sdk'
-  | 'device-readback'
-  | 'device-notification';
-
-/** Event emitted during BLE WiFi provisioning. */
-export interface KeonProvisioningEvent {
-  /** Provisioning stage that was active when this event was observed. */
-  stage: KeonProvisioningStage;
-  /** Decoded state of the stage or device response. */
-  status: KeonProvisioningStatus;
-  /** Human-readable summary suitable for logs/UI. */
-  message: string;
-  /** Raw first-byte status code from the device, when one was received. */
-  code?: number;
-  /** All raw bytes received from the characteristic, when available. */
-  rawValue?: number[];
-  /** Whether the event came from SDK progress, a readback, or a notification. */
-  source: KeonProvisioningEventSource;
-  /** One-based token chunk index, only for token writes. */
-  chunkIndex?: number;
-  /** Total token chunks, only for token writes. */
-  chunkTotal?: number;
-}
-
-/** Options for BLE WiFi provisioning. */
-export interface KeonProvisioningOptions {
-  /** Called for SDK progress and device-originated provisioning status codes. */
-  onStatus?: (event: KeonProvisioningEvent) => void;
-  /**
-   * How long to keep listening for a final success/failure notification after
-   * PROV_CRED_CONFIRM when immediate readback is ongoing/unavailable. Default 0.
-   */
-  finalStatusTimeoutMs?: number;
-  /**
-   * Keep listening after the write/confirm sequence until the device drops the
-   * Bluetooth GATT connection. Default false.
-   */
-  postProvisionListenUntilDisconnect?: boolean;
-  /**
-   * Keep listening after the write/confirm sequence for a fixed duration.
-   * Ignored when postProvisionListenUntilDisconnect is true. Default 0.
-   */
-  postProvisionListenMs?: number;
 }
 
 /** Callbacks shared by the remote (server-backed) transports. */
@@ -185,19 +119,13 @@ export interface RemoteController extends KeonController {
 }
 
 /**
- * The BLE transport additionally exposes provisioning, direct battery reads,
- * a self-test and motor position notifications.
+ * The BLE transport additionally exposes direct battery reads, a self-test and
+ * motor position notifications.
  */
 export interface BleController extends KeonController {
   /** Device information read during {@link connect}. */
   readonly deviceInfo: DeviceInfo | null;
-  /** Write WiFi credentials and the registration token to the device. */
-  provision(
-    ssid: string,
-    password: string,
-    token: string,
-    options?: KeonProvisioningOptions
-  ): Promise<void>;
+  readonly driverName: string;
   /** Read the battery level (0..100), or -1 when unavailable. */
   getBattery(): Promise<number>;
   /** Run a short movement to confirm the device responds. */

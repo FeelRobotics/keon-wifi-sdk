@@ -22,20 +22,7 @@ const transformDataToArray = (
   }
 };
 
-const displayToken = (token: string | null = null): string => {
-  if (!token) {
-    return '';
-  }
-
-  if (token.length <= 30) {
-    return token;
-  }
-  const first20 = token.slice(0, 20);
-  const last10 = token.slice(-10);
-  return `${first20}...${last10}`;
-};
-
-export { transformDataToArray, displayToken };
+export { transformDataToArray };
 /**
  * Reads data from a DataView and returns an ASCII string
  * if all bytes are within the printable ASCII range (32..126).
@@ -59,6 +46,6 @@ export const dataViewToAsciiString = (data: DataView): string => {
 };
 
 export const wait = (msecs: number) =>
-  new Promise(resolve => {
+  new Promise((resolve) => {
     setTimeout(resolve, msecs);
   });

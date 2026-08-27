@@ -1,23 +1,22 @@
 {
-  "name": "keon-wifi-sdk-monorepo",
+  "name": "keon-wifi-sdk",
   "private": true,
   "license": "MIT",
-  "packageManager": "yarn@4.15.0",
+  "packageManager": "yarn@4.18.0",
   "workspaces": [
     "packages/sdk",
     "packages/react",
     "examples/keon-emulator-web",
-    "examples/classic/*",
     "examples/fug/*"
   ],
   "scripts": {
     "build": "yarn workspaces foreach -Apt --include '@feelrobotics/*' run build",
-    "build:all": "yarn workspaces foreach -Apt --exclude keon-wifi-sdk-monorepo run build",
+    "build:all": "yarn workspaces foreach -Apt --exclude . run build",
     "build:sdk": "yarn workspace @feelrobotics/keon-wifi-sdk run build",
     "build:react": "yarn workspace @feelrobotics/keon-wifi-sdk-react run build",
-    "lint": "yarn workspaces foreach -Ap --exclude keon-wifi-sdk-monorepo run lint",
-    "typecheck": "yarn workspaces foreach -Ap --exclude keon-wifi-sdk-monorepo run typecheck",
-    "test": "yarn workspaces foreach -Ap --exclude keon-wifi-sdk-monorepo run test",
+    "lint": "yarn workspaces foreach -Ap --exclude . run lint",
+    "typecheck": "yarn workspaces foreach -Ap --exclude . run typecheck",
+    "test": "yarn workspaces foreach -Ap --exclude . run test",
     "size": "yarn workspace @feelrobotics/keon-wifi-sdk run size",
     "dev": "yarn dev:fug:react",
     "dev:fug:react": "yarn build && yarn workspace keon-fug-react dev",
@@ -25,12 +24,11 @@
     "dev:fug:svelte": "yarn build && yarn workspace keon-fug-svelte dev",
     "dev:fug:vanilla": "yarn build && yarn workspace keon-fug-vanilla dev",
     "dev:fug:node": "yarn build && yarn workspace keon-fug-node start",
-    "dev:classic:react": "yarn build && yarn workspace keon-classic-react dev",
-    "dev:classic:vue": "yarn build && yarn workspace keon-classic-vue dev",
-    "dev:classic:svelte": "yarn build && yarn workspace keon-classic-svelte dev",
-    "dev:classic:vanilla": "yarn build && yarn workspace keon-classic-vanilla dev",
     "dev:emulator": "yarn workspace keon-emulator-web dev",
     "prepare": "husky"
+  },
+  "resolutions": {
+    "test-exclude@npm:^6.0.0": "npm:^7.0.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",

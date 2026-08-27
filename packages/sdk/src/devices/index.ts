@@ -3,12 +3,13 @@
 import { KeonDeviceDriver } from './types';
 import { keonWifi } from './keonWifi';
 import { keon2 } from './keon2';
+import { onix_ultra } from './onix_ultra';
 
 /**
  * The set of supported devices. Add a device: create its driver file and add it
  * here. Remove a device: delete its file and its entry below.
  */
-export const DRIVERS: KeonDeviceDriver[] = [keonWifi, keon2];
+export const DRIVERS: KeonDeviceDriver[] = [keonWifi, keon2, onix_ultra];
 
 /** Finds the driver for an already-selected Bluetooth device, or null. */
 export function matchDriver(device: BluetoothDevice): KeonDeviceDriver | null {
