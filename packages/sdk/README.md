@@ -1,15 +1,12 @@
 # @feelrobotics/keon-wifi-sdk
 
-Framework-agnostic TypeScript SDK for controlling **Keon** devices. It handles
-authentication and real-time device control over three transports — with no
-UI-framework dependency.
+Framework-agnostic TypeScript SDK for controlling **Keon** devices. It handles authentication and device control over three transports — with no UI-framework dependency.
 
-- 🎮 **Control** a device over **BLE**, **WiFi** (Socket.IO), or **FUG** (REST) —
-  one common `KeonController` interface for all three.
-- 🧩 **Transparent devices** — KEON WIFI, KEON2 and ONYX ULTRA are handled by
-  pluggable drivers; your code never branches on the device version.
-- 📦 **Tiny** (~4 KB brotli), tree-shakeable, ships ESM + CJS + types.
-- 🌍 **Works anywhere** — Vanilla, React, Vue, Svelte, Angular, Node.
+- **Control** a device over **FUG** (REST, recommended), **WiFi** (Socket.IO, real-time), or **BLE** (Web Bluetooth, fallback) — one common `KeonController` interface for all three.
+- **Server-friendly** — the FUG transport needs only a `deviceConnectionKey` and HTTP, so a device can be driven from a back-end or a browser alike.
+- **Transparent devices** — KEON WIFI, KEON2 and ONYX ULTRA are handled by pluggable drivers; consumer code never branches on the device version.
+- **Tiny** (~4 KB brotli), tree-shakeable, ships ESM + CJS + types.
+- **Works anywhere** — Vanilla, React, Vue, Svelte, Angular, Node.
 
 > **Using React?** Install [`@feelrobotics/keon-wifi-sdk-react`](https://www.npmjs.com/package/@feelrobotics/keon-wifi-sdk-react)
 > for a ready-made `useKeonWiFi` hook. It re-exports everything here.
@@ -20,33 +17,39 @@ UI-framework dependency.
 
 The SDK is built on **two orthogonal axes**:
 
-- **Transports** — _how_ commands reach the device. Each is a manager class that
-  implements the common **`KeonController`** interface:
-  - **`BleManager`** — direct Web Bluetooth control. Browser-only.
-  - **`WifiManager`** — Socket.IO to the FEC server. Status is pushed.
-  - **`FugManager`** — REST to the Feel Unified Gateway. Status is pulled.
+- **Transports** — _how_ commands reach the device. Each is a manager class that implements the common **`KeonController`** interface. Chosen by connection method:
+  - **`FugManager`** — REST to the Feel Unified Gateway, authenticated with a
+    `deviceConnectionKey`. Status is pulled. **Recommended default**: no Web
+    Bluetooth, no in-browser OAuth, works in the browser and in Node/back-end.
+  - **`WifiManager`** — Socket.IO to the FEC server. Status is pushed with low
+    latency. Suitable **when real-time, interactive control is required**.
+  - **`BleManager`** — direct Web Bluetooth control, browser-only. A **fallback**
+    for local control when a server connection is not an option.
 - **Devices** — _what_ differs between generations (UUIDs, limits). Each is a
   pluggable driver. `BleManager` picks the right one from the device the user
-  selects, so the device generation is transparent to your code.
+  selects, so the device generation is transparent to consumer code.
 
 Construct any manager with its static async `connect()` factory.
 
-> **Getting a device onto WiFi is out of scope for this SDK.** Use the
-> **FeelConnect** app to set the device up; it gives you a `deviceConnectionKey`
-> that the WiFi and FUG transports consume.
+### How a device gets onto WiFi
+
+The Keon user puts the device on WiFi using the **FeelConnect app**, which
+produces a `deviceConnectionKey` (DCK). The integrating application then controls
+that device with the DCK over FUG (recommended) or, for real-time sessions, over
+WiFi. Writing WiFi credentials onto the device is **out of scope for this SDK**.
 
 ---
 
 ## Requirements
 
-BLE control uses the **Web Bluetooth API**, which only works:
+`FugManager` (REST) and `WifiManager` (Socket.IO) work in any browser **and** in
+Node.js — they have no Web Bluetooth dependency.
+
+Only the **`BleManager`** fallback uses the **Web Bluetooth API**, which works:
 
 - in Chromium-based browsers (Chrome, Edge, Opera) — _not_ Firefox/Safari;
 - over `https://` or `localhost`;
 - when triggered by a **user gesture** (e.g. a click handler).
-
-`WifiManager` (Socket.IO) and `FugManager` (REST) work in any browser and in
-Node.js. Only the BLE transport is browser-only.
 
 ---
 
@@ -64,48 +67,17 @@ yarn add @feelrobotics/keon-wifi-sdk
 
 | Token                               | Where it comes from                                                                                            | Used for                                                                   |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **`feelAppsToken`** (partner token) | Your backend requests it from **ControlPlane**: `GET /api/v1/partner/{partner_key}/token`.                     | Authenticating with the OAuth servers.                                     |
+| **`feelAppsToken`** (partner token) | Requested from **ControlPlane** by the backend: `GET /api/v1/partner/{partner_key}/token`.                     | Authenticating with the OAuth servers.                                     |
 | **`registrationToken`**             | Returned by `getTokenForKeonWiFi`. A JWT that also encodes the WebSocket server URL and device connection key. | WiFi (Socket.IO) control credentials.                                      |
-| **`deviceConnectionKey`**           | Returned by `getTokenForKeonWiFi`.                                                                             | Re-associate the **same** device across sessions; also the FUG credential. |
+| **`deviceConnectionKey`**           | Returned by `getTokenForKeonWiFi`; originally issued by the FeelConnect app.                                   | Re-associate the **same** device across sessions; also the FUG credential. |
 
 ---
 
-## Quick start (Vanilla JS/TS)
+## Quick start (FUG — recommended)
 
-```typescript
-import { getTokenForKeonWiFi, WifiManager } from '@feelrobotics/keon-wifi-sdk';
-
-// 1. Authenticate (throws AuthError on failure). Pass the deviceConnectionKey
-//    from the FeelConnect app to target a device already set up on WiFi.
-const { registrationToken } = await getTokenForKeonWiFi(
-  partnerToken,
-  deviceConnectionKey
-);
-
-// 2. Control the device in real time over WiFi.
-const manager = await WifiManager.connect(partnerToken, registrationToken, {
-  // A connection can cover several devices, so status arrives as a list.
-  onStatusChange: (statuses) =>
-    console.log('battery', statuses[0]?.battery_status),
-});
-await manager.moveTo(50, 90);
-// …later
-await manager.disconnect();
-```
-
-### Direct BLE control (no server)
-
-```typescript
-const ble = await BleManager.connect({
-  onPosition: (p) => console.log('position', p.position),
-});
-await ble.moveTo(50, 90);
-await ble.movementBetween(60, 0, 100);
-console.log('battery', await ble.getBattery());
-await ble.disconnect();
-```
-
-### Control over FUG (REST)
+Controls an already-provisioned device (put on WiFi with the FeelConnect app)
+over REST. Only its `deviceConnectionKey` is required; this runs in a browser or
+in Node.
 
 ```typescript
 import { FugManager } from '@feelrobotics/keon-wifi-sdk';
@@ -113,38 +85,101 @@ import { FugManager } from '@feelrobotics/keon-wifi-sdk';
 const manager = await FugManager.connect({
   deviceConnectionKey, // also the credential: sent as `Authorization: DCK <key>`
   statusPollIntervalSec: 30, // optional poll interval (seconds), default 30; 0 = off
+  // A connection can cover several devices, so status arrives as a list.
   onStatusChange: (statuses) =>
     console.log('battery', statuses[0]?.battery_status),
 });
 await manager.forceStatusReport(); // pull the initial status (connect doesn't)
 await manager.moveTo(50, 90);
+// …later
 await manager.disconnect();
+```
+
+### Real-time control over WiFi
+
+For live, interactive control, use the Socket.IO transport instead. Status is
+pushed (no polling). It needs a `registrationToken` from `getTokenForKeonWiFi`.
+
+```typescript
+import { getTokenForKeonWiFi, WifiManager } from '@feelrobotics/keon-wifi-sdk';
+
+const { registrationToken } = await getTokenForKeonWiFi(
+  partnerToken,
+  deviceConnectionKey
+);
+
+const manager = await WifiManager.connect(partnerToken, registrationToken, {
+  onStatusChange: (statuses) =>
+    console.log('battery', statuses[0]?.battery_status),
+});
+await manager.moveTo(50, 90);
+await manager.disconnect();
+```
+
+### Fallback: direct control over BLE
+
+Browser-only, no server involved. The right device driver (KEON WIFI / KEON2 /
+ONYX ULTRA) is selected automatically.
+
+```typescript
+import { BleManager } from '@feelrobotics/keon-wifi-sdk';
+
+// Must run from a user gesture (e.g. a click handler).
+const ble = await BleManager.connect({
+  onPosition: (p) => console.log('position', p.position),
+});
+try {
+  await ble.moveTo(50, 90);
+  await ble.movementBetween(60, 0, 100);
+  console.log('battery', await ble.getBattery());
+} finally {
+  await ble.disconnect();
+}
 ```
 
 ---
 
 ## Integration examples
 
+### Node.js / back-end (FUG)
+
+No browser, no Web Bluetooth — just a `deviceConnectionKey` and HTTP. This is the
+cleanest way to drive a device from a server or job:
+
+```typescript
+import { FugManager } from '@feelrobotics/keon-wifi-sdk';
+
+const manager = await FugManager.connect({
+  deviceConnectionKey,
+  onStatusChange: (statuses) =>
+    console.log('battery', statuses[0]?.battery_status),
+});
+await manager.forceStatusReport();
+await manager.moveTo(50, 90);
+await manager.disconnect();
+```
+
 ### React
 
 Use the [`@feelrobotics/keon-wifi-sdk-react`](https://www.npmjs.com/package/@feelrobotics/keon-wifi-sdk-react)
-adapter:
+adapter. `connectFug` is the recommended path; `connectWifi` covers real-time and
+`connectBle` is the local fallback:
 
 ```tsx
 import { useKeonWiFi } from '@feelrobotics/keon-wifi-sdk-react';
 
 function DeviceControl({
   partnerToken,
-  dck,
+  deviceConnectionKey,
 }: {
   partnerToken: string;
-  dck: string;
+  deviceConnectionKey: string;
 }) {
   const { status, controller, connectFug } = useKeonWiFi(partnerToken);
 
   return (
     <>
-      <button onClick={() => connectFug({ deviceConnectionKey: dck })}>
+      <button onClick={() => connectFug({ deviceConnectionKey })}>
         Connect
       </button>
       {status && <p>Battery: {status.battery_status}%</p>}
@@ -155,11 +190,12 @@ function DeviceControl({
 }
 ```
 
-The hook exposes `connectBle`, `connectWifi`, `connectFug`, `disconnect`, plus
-`controller`, `status` (primary device), `statuses` (all devices) and `position`
-state.
+The hook also exposes `connectWifi`, `connectBle`, `disconnect`, plus
+`controller`, `statuses` (all devices) and `position` state.
 
-### Vue 3 (composable)
+### Vue 3 (composable, real-time over WiFi)
+
+For pushed, low-latency status, wire `WifiManager` into a composable:
 
 ```typescript
 import { ref, shallowRef, onUnmounted } from 'vue';
@@ -188,22 +224,6 @@ export function useKeon(partnerToken: string) {
 }
 ```
 
-### Node.js (control only)
-
-BLE is browser-only, but you can control an already-configured device over
-WiFi or FUG from Node:
-
-```typescript
-import { WifiManager } from '@feelrobotics/keon-wifi-sdk';
-
-const manager = await WifiManager.connect(partnerToken, registrationToken, {
-  onStatusChange: (statuses) =>
-    console.log('battery', statuses[0]?.battery_status),
-});
-await manager.moveTo(50, 90);
-await manager.disconnect();
-```
-
 ---
 
 ## API reference
@@ -227,10 +247,44 @@ Authenticates against the FeelMe OAuth server and returns
 | `disconnect()`                     | Tear down the connection.                            |
 | `transport`                        | `'ble' \| 'wifi' \| 'fug'`.                          |
 
+### `RemoteController` (FUG + WiFi)
+
+The server-backed transports add to `KeonController`:
+
+| Method                                    | Description                                                                                    |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `getStatuses()`                           | Statuses of every device on the connection.                                                    |
+| `setIntensity(intensity)`                 | Adjust intensity. Integer percentage 0–100.                                                    |
+| `setStatusInterval(interval)`             | Status report interval. Integer 0–1000.                                                        |
+| `switchToBtMode()` / `resetCredentials()` | Server-routed setup commands: switch the device to BT mode / wipe its stored WiFi credentials. |
+| `forceStatusReport()`                     | Request an immediate status report.                                                            |
+
+A single connection can cover several devices, so `onStatusChange` receives the
+full list of device statuses (one entry per device); `getStatus()` returns the
+first (primary) device and `getStatuses()` returns them all. Status payloads can
+be partial — treat every `KeonDeviceStatus` field as optional, because devices
+may omit keys until a later report.
+
+### `FugManager.connect({ deviceConnectionKey, statusPollIntervalSec?, onStatusChange? })` → `RemoteController`
+
+The recommended transport. Connects to the FUG REST gateway. The
+`deviceConnectionKey` is both the credential (sent as `Authorization: DCK <key>`)
+and the device identifier. Status is pull-based: it's polled every
+`statusPollIntervalSec` seconds (default 30; set `0` to disable) and
+`forceStatusReport()` can be called on demand. `connect` does not fetch status
+itself — call `forceStatusReport()` after connecting to obtain the initial status
+before the first poll.
+
+### `WifiManager.connect(feelAppsToken, registrationToken, callbacks?)` → `RemoteController`
+
+For real-time control. Opens a Socket.IO connection to the FEC server; status is
+pushed. `callbacks` accepts `onStatusChange` and `onUserAction`. **Throws**
+`AuthError` if credentials cannot be obtained.
+
 ### `BleManager.connect({ onPosition? })` → `BleController`
 
-Prompts the user to pick a device, connects over GATT, reads device info and
-enters movement mode. Adds to `KeonController`:
+The browser-only fallback. Prompts the user to pick a device, connects over GATT,
+reads device info and enters movement mode. Adds to `KeonController`:
 
 | Member           | Description                                                      |
 | ---------------- | ---------------------------------------------------------------- |
@@ -241,40 +295,6 @@ enters movement mode. Adds to `KeonController`:
 | `driverName`     | Name of the driver that matched the connected device.            |
 
 - **Throws** `KeonBLEError` on selection/connection failure or unsupported device.
-
-### `WifiManager.connect(feelAppsToken, registrationToken, callbacks?)` → `RemoteController`
-
-Opens a Socket.IO connection to the FEC server. `callbacks` accepts
-`onStatusChange` and `onUserAction`. **Throws** `AuthError` if credentials
-cannot be obtained.
-
-A single connection can cover several devices, so `onStatusChange` receives the
-full list of device statuses (one entry per device); `getStatus()` returns the
-first (primary) device and `getStatuses()` returns them all.
-
-Status payloads can be partial. Treat every `KeonDeviceStatus` field as
-optional because devices may omit keys until a later report.
-
-### `FugManager.connect({ deviceConnectionKey, statusPollIntervalSec?, onStatusChange? })` → `RemoteController`
-
-Connects to the FUG REST gateway. The `deviceConnectionKey` is both the
-credential (sent as `Authorization: DCK <key>`) and the device identifier.
-Status is pull-based: it's polled every `statusPollIntervalSec` seconds
-(default 30; set `0` to disable) and you can call `forceStatusReport()` on
-demand. `connect` does not fetch status itself — call `forceStatusReport()`
-after connecting if you need the initial status before the first poll.
-
-### `RemoteController` (WiFi + FUG)
-
-Adds to `KeonController`:
-
-| Method                                    | Description                                                                                    |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `getStatuses()`                           | Statuses of every device on the connection.                                                    |
-| `setIntensity(intensity)`                 | Adjust intensity. Integer percentage 0–100.                                                    |
-| `setStatusInterval(interval)`             | Status report interval. Integer 0–1000.                                                        |
-| `switchToBtMode()` / `resetCredentials()` | Server-routed setup commands: switch the device to BT mode / wipe its stored WiFi credentials. |
-| `forceStatusReport()`                     | Request an immediate status report.                                                            |
 
 ### Device drivers
 

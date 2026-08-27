@@ -15,7 +15,7 @@ jobs:
     # tag push alone cannot publish without an approval step.
     environment: npm-publish
     permissions:
-      contents: read
+      contents: write # required to create the GitHub Release
       id-token: write # required for npm provenance
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -64,3 +64,14 @@ jobs:
         run: yarn workspace @feelrobotics/keon-wifi-sdk-react npm publish --access public --provenance
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --generate-notes \
+            --notes "Published to npm: [\`@feelrobotics/keon-wifi-sdk\`](https://www.npmjs.com/package/@feelrobotics/keon-wifi-sdk/v/$VERSION) · [\`@feelrobotics/keon-wifi-sdk-react\`](https://www.npmjs.com/package/@feelrobotics/keon-wifi-sdk-react/v/$VERSION)"

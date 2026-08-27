@@ -14,6 +14,10 @@ device setup is handled by the **FeelConnect** app.
 - Re-exported provisioning types and `KeonProvisioningError` are gone (removed
   from the core SDK).
 
+## 1.0.1
+
+- docs: update and align documentation
+
 ## 1.0.0
 
 Reworked as a thin React adapter over the framework-agnostic
