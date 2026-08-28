@@ -46,7 +46,7 @@ describe('fetchAccessToken', () => {
     } as unknown as Response);
     global.fetch = fetchSpy;
 
-    await fetchAccessToken('my-partner-token');
+    await fetchAccessToken('https://oauth.example.com', 'my-partner-token');
 
     const headers: Headers = fetchSpy.mock.calls[0][1].headers;
     expect(headers.get('Authorization')).toBe('Bearer my-partner-token');
@@ -61,7 +61,11 @@ describe('fetchAccessToken', () => {
     } as unknown as Response);
     global.fetch = fetchSpy;
 
-    await fetchAccessToken('tok', 'device-key-123');
+    await fetchAccessToken(
+      'https://oauth.example.com',
+      'tok',
+      'device-key-123'
+    );
 
     const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
     expect(body).toEqual({ device_connection_key: 'device-key-123' });
@@ -76,7 +80,7 @@ describe('fetchAccessToken', () => {
     } as unknown as Response);
     global.fetch = fetchSpy;
 
-    await fetchAccessToken('partner-tok');
+    await fetchAccessToken('https://oauth.example.com', 'partner-tok');
 
     expect(fetchSpy.mock.calls[0][1].body).toBeNull();
   });
@@ -109,7 +113,10 @@ describe('fetchRegistrationToken', () => {
   it('returns registration_token on success', async () => {
     mockFetch({ json: async () => ({ registration_token: 'reg-tok-123' }) });
 
-    const token = await fetchRegistrationToken('access-token');
+    const token = await fetchRegistrationToken(
+      'https://oauth.example.com',
+      'access-token'
+    );
     expect(token).toBe('reg-tok-123');
   });
 
@@ -117,7 +124,10 @@ describe('fetchRegistrationToken', () => {
     const fetchSpy = jest.fn();
     global.fetch = fetchSpy;
 
-    const result = await fetchRegistrationToken('');
+    const result = await fetchRegistrationToken(
+      'https://oauth.example.com',
+      ''
+    );
     expect(result).toBeNull();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -125,7 +135,10 @@ describe('fetchRegistrationToken', () => {
   it('returns null when response lacks registration_token', async () => {
     mockFetch({ json: async () => ({ other_field: 'value' }) });
 
-    const result = await fetchRegistrationToken('acc');
+    const result = await fetchRegistrationToken(
+      'https://oauth.example.com',
+      'acc'
+    );
     expect(result).toBeNull();
   });
 
@@ -138,7 +151,10 @@ describe('fetchRegistrationToken', () => {
     } as unknown as Response);
     global.fetch = fetchSpy;
 
-    await fetchRegistrationToken('my-access-token');
+    await fetchRegistrationToken(
+      'https://oauth.example.com',
+      'my-access-token'
+    );
 
     const headers: Headers = fetchSpy.mock.calls[0][1].headers;
     expect(headers.get('Authorization')).toBe('Bearer my-access-token');
@@ -152,6 +168,8 @@ describe('fetchRegistrationToken', () => {
       text: async () => 'forbidden',
     } as unknown as Response);
 
-    await expect(fetchRegistrationToken('access-token')).rejects.toThrow('403');
+    await expect(
+      fetchRegistrationToken('https://oauth.example.com', 'access-token')
+    ).rejects.toThrow('403');
   });
 });

@@ -37,8 +37,7 @@ app.innerHTML = `
   <section class="card">
     <h2>Connection</h2>
     <p class="hint">FUG controls an <strong>already-provisioned</strong> device.
-      Get a <code>deviceConnectionKey</code> from the FeelConnect app (or a
-      <code>classic/</code> provisioning example).</p>
+      Get a <code>deviceConnectionKey</code> from the FeelConnect app.</p>
     <label>deviceConnectionKey<input id="dck" placeholder="DCK" /></label>
     <label>status poll (seconds, 0 = off)<input id="pollSec" type="number" value="30" /></label>
     <button id="connect">Connect</button>

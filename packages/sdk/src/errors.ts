@@ -24,11 +24,3 @@ export class KeonBLEError extends KeonError {
     this.name = 'KeonBLEError';
   }
 }
-
-/** Thrown when the WiFi provisioning handshake fails. */
-export class KeonProvisioningError extends KeonError {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = 'KeonProvisioningError';
-  }
-}

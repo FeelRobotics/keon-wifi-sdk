@@ -3,6 +3,7 @@ import type { KeonDeviceStatus } from '../src/index';
 import { AuthError } from '../src/errors';
 import * as oauthApi from '../src/api/oauth-api';
 import * as tokenHelpers from '../src/api/token-helpers';
+import { DEFAULT_OAUTH_SERVER_URL } from '../src/api/helpers';
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -41,7 +42,11 @@ describe('getTokenForKeonWiFi', () => {
 
     await getTokenForKeonWiFi('partner-tok', 'existing-key');
 
-    expect(fetchSpy).toHaveBeenCalledWith('partner-tok', 'existing-key');
+    expect(fetchSpy).toHaveBeenCalledWith(
+      DEFAULT_OAUTH_SERVER_URL,
+      'partner-tok',
+      'existing-key'
+    );
   });
 
   it('forwards the partner token and deviceConnectionKey through both token requests', async () => {
@@ -50,8 +55,15 @@ describe('getTokenForKeonWiFi', () => {
 
     await getTokenForKeonWiFi('partner-tok', null);
 
-    expect(accessSpy).toHaveBeenCalledWith('partner-tok', null);
-    expect(registrationSpy).toHaveBeenCalledWith('access-tok');
+    expect(accessSpy).toHaveBeenCalledWith(
+      DEFAULT_OAUTH_SERVER_URL,
+      'partner-tok',
+      null
+    );
+    expect(registrationSpy).toHaveBeenCalledWith(
+      DEFAULT_OAUTH_SERVER_URL,
+      'access-tok'
+    );
   });
 
   it('throws AuthError when authentication fails', async () => {

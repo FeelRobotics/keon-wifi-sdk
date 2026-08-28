@@ -1,26 +1,14 @@
 /// <reference types="web-bluetooth" />
 
-/** BLE provisioning timing/protocol parameters that differ per device. */
-export interface BleProvisioningProfile {
-  /** Negotiated MTU used to size token chunks. */
-  mtu: number;
-  /** Bytes subtracted from the MTU when chunking the token. */
-  tokenChunkOverhead: number;
-  /** Delay between writes when the client cannot read a status code. */
-  interPacketWaitMs: number;
-}
-
 /** Everything the BLE transport needs to talk to one device generation. */
 export interface BleDeviceProfile {
   serviceUuid: number;
   motorCharUuid: number;
   batteryCharUuid: number;
-  provCharUuid: number;
   /** Optional device-info characteristics read on connect. */
   infoChars?: { firmware?: number; manufacturer?: number; serial?: number };
   /** Highest position the firmware accepts (commands are clamped to it). */
   maxPosition: number;
-  provisioning: BleProvisioningProfile;
   encodeMove(speed: number, position: number): Uint8Array<ArrayBuffer>;
   encodeMovementBetween(
     speed: number,

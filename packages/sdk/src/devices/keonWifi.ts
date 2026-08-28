@@ -13,14 +13,8 @@ export const keonWifi: KeonDeviceDriver = {
     serviceUuid: 0x1900,
     motorCharUuid: 0x1800,
     batteryCharUuid: 0x2a19,
-    provCharUuid: 0x2001,
     infoChars: { firmware: 0x1901, manufacturer: 0x1902, serial: 0x1903 },
     maxPosition: 90,
-    provisioning: {
-      mtu: 512,
-      tokenChunkOverhead: 12,
-      interPacketWaitMs: 0,
-    },
     ...keonProtocol,
   },
 };

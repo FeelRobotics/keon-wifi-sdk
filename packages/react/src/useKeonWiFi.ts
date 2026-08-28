@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  getTokenForKeonWiFi,
   BleManager,
   WifiManager,
   FugManager,
@@ -9,9 +8,6 @@ import type {
   KeonController,
   KeonDeviceStatus,
   KeonBlePosition,
-  KeonProvisioningOptions,
-  DeviceInfo,
-  TokenResult,
 } from '@feelrobotics/keon-wifi-sdk';
 
 /** Options for connecting the FUG transport from the hook. */
@@ -30,21 +26,11 @@ export interface UseKeonWiFi {
   statuses: KeonDeviceStatus[];
   /** Latest motor position (BLE transport), or null. */
   position: KeonBlePosition | null;
-  /**
-   * Full provisioning flow: fetch tokens, write WiFi credentials over BLE, then
-   * connect the WiFi manager. Returns the device info together with the tokens.
-   */
-  provision: (
-    ssid: string,
-    password: string,
-    deviceConnectionKey?: string,
-    options?: KeonProvisioningOptions
-  ) => Promise<{ device: DeviceInfo } & TokenResult>;
   /** Connect over BLE for direct control (browser-only). */
   connectBle: () => Promise<BleManager>;
-  /** Connect the WiFi (Socket.IO) manager to a provisioned device. */
+  /** Connect the WiFi (Socket.IO) manager to an already-configured device. */
   connectWifi: (registrationToken: string) => Promise<WifiManager>;
-  /** Connect the FUG (REST) manager to a provisioned device. */
+  /** Connect the FUG (REST) manager to an already-configured device. */
   connectFug: (options: ConnectFugOptions) => Promise<FugManager>;
   /** Close the active connection and reset state. */
   disconnect: () => void;
@@ -108,31 +94,6 @@ export function useKeonWiFi(feelAppsToken: string): UseKeonWiFi {
     [adopt]
   );
 
-  const provision = useCallback(
-    async (
-      ssid: string,
-      password: string,
-      deviceConnectionKey?: string,
-      options?: KeonProvisioningOptions
-    ) => {
-      const tokens = await getTokenForKeonWiFi(
-        feelAppsToken,
-        deviceConnectionKey ?? null
-      );
-      const ble = await BleManager.connect();
-      let device: DeviceInfo;
-      try {
-        await ble.provision(ssid, password, tokens.registrationToken, options);
-        device = ble.deviceInfo;
-      } finally {
-        await ble.disconnect();
-      }
-      await connectWifi(tokens.registrationToken);
-      return { device, ...tokens };
-    },
-    [feelAppsToken, connectWifi]
-  );
-
   const disconnect = useCallback(() => {
     void controllerRef.current?.disconnect();
     controllerRef.current = null;
@@ -154,7 +115,6 @@ export function useKeonWiFi(feelAppsToken: string): UseKeonWiFi {
     status,
     statuses,
     position,
-    provision,
     connectBle,
     connectWifi,
     connectFug,

@@ -58,7 +58,11 @@ describe('getCredentialForFecServer', () => {
 
     await getCredentialForFecServer('my-partner-token', 'reg-token');
 
-    expect(fetchSpy).toHaveBeenCalledWith('my-partner-token', 'my-device-key');
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://oauth.server.com',
+      'my-partner-token',
+      'my-device-key'
+    );
   });
 
   it('returns [socketUrl, null] when fetchAccessToken yields no token', async () => {

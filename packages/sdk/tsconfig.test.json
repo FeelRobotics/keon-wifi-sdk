@@ -1,0 +1,12 @@
+{
+  // Test-only config: TypeScript 6 no longer includes @types/* packages
+  // automatically, so the globals the suites rely on must be listed here.
+  // Kept out of tsconfig.json so the published library is not typechecked
+  // against jest/node globals.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "types": ["jest", "node", "web-bluetooth"]
+  },
+  "include": ["src", "test"]
+}

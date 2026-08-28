@@ -3,10 +3,9 @@
 import { KeonDeviceDriver } from './types';
 import { keonProtocol } from './keonProtocol';
 
-const NAME = 'KEON2';
+const NAME = 'ONYX ULTRA';
 
-/** Driver for the KEON2 device (BLE service 0x1400). */
-export const keon2: KeonDeviceDriver = {
+export const onix_ultra: KeonDeviceDriver = {
   name: NAME,
   matches: (device) => device.name === NAME,
   ble: {

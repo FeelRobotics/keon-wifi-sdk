@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.0.0
+
+Tracks `@feelrobotics/keon-wifi-sdk` 2.0.0, which drops WiFi provisioning —
+device setup is handled by the **FeelConnect** app.
+
+### BREAKING CHANGES
+
+- Removed `provision()` from `useKeonWiFi`. Fetch tokens with the core SDK's
+  `getTokenForKeonWiFi()` and pass the registration token to
+  `connectWifi(registrationToken)` instead; FUG connections take the
+  `deviceConnectionKey` from FeelConnect.
+- Re-exported provisioning types and `KeonProvisioningError` are gone (removed
+  from the core SDK).
+
 ## 1.0.1
 
 - docs: update and align documentation

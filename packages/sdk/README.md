@@ -1,10 +1,10 @@
 # @feelrobotics/keon-wifi-sdk
 
-Framework-agnostic TypeScript SDK for controlling **Keon** devices. It handles authentication, device control over three transports, and (as a fallback) Bluetooth LE provisioning — with no UI-framework dependency.
+Framework-agnostic TypeScript SDK for controlling **Keon** devices. It handles authentication and device control over three transports — with no UI-framework dependency.
 
 - **Control** a device over **FUG** (REST, recommended), **WiFi** (Socket.IO, real-time), or **BLE** (Web Bluetooth, fallback) — one common `KeonController` interface for all three.
 - **Server-friendly** — the FUG transport needs only a `deviceConnectionKey` and HTTP, so a device can be driven from a back-end or a browser alike.
-- **Transparent devices** — KEON WIFI and KEON2 are handled by pluggable drivers; consumer code never branches on the device version.
+- **Transparent devices** — KEON WIFI, KEON2 and ONYX ULTRA are handled by pluggable drivers; consumer code never branches on the device version.
 - **Tiny** (~4 KB brotli), tree-shakeable, ships ESM + CJS + types.
 - **Works anywhere** — Vanilla, React, Vue, Svelte, Angular, Node.
 
@@ -23,12 +23,11 @@ The SDK is built on **two orthogonal axes**:
     Bluetooth, no in-browser OAuth, works in the browser and in Node/back-end.
   - **`WifiManager`** — Socket.IO to the FEC server. Status is pushed with low
     latency. Suitable **when real-time, interactive control is required**.
-  - **`BleManager`** — direct Web Bluetooth (provisioning + control), browser-only.
-    A **fallback**: provisioning is normally done by the FeelConnect app, so reach
-    for BLE only for in-browser provisioning or local control without a server.
+  - **`BleManager`** — direct Web Bluetooth control, browser-only. A **fallback**
+    for local control when a server connection is not an option.
 - **Devices** — _what_ differs between generations (UUIDs, limits). Each is a
   pluggable driver. `BleManager` picks the right one from the device the user
-  selects, so KEON WIFI and KEON2 are transparent to consumer code.
+  selects, so the device generation is transparent to consumer code.
 
 Construct any manager with its static async `connect()` factory.
 
@@ -37,8 +36,7 @@ Construct any manager with its static async `connect()` factory.
 The Keon user puts the device on WiFi using the **FeelConnect app**, which
 produces a `deviceConnectionKey` (DCK). The integrating application then controls
 that device with the DCK over FUG (recommended) or, for real-time sessions, over
-WiFi. `BleManager.provision()` is reserved as a fallback for cases where
-provisioning must happen inside the application itself.
+WiFi. Writing WiFi credentials onto the device is **out of scope for this SDK**.
 
 ---
 
@@ -70,8 +68,8 @@ yarn add @feelrobotics/keon-wifi-sdk
 | Token                               | Where it comes from                                                                                            | Used for                                                                   |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | **`feelAppsToken`** (partner token) | Requested from **ControlPlane** by the backend: `GET /api/v1/partner/{partner_key}/token`.                     | Authenticating with the OAuth servers.                                     |
-| **`registrationToken`**             | Returned by `getTokenForKeonWiFi`. A JWT that also encodes the WebSocket server URL and device connection key. | BLE provisioning + WiFi control credentials.                               |
-| **`deviceConnectionKey`**           | Returned by `getTokenForKeonWiFi`.                                                                             | Re-associate the **same** device across sessions; also the FUG credential. |
+| **`registrationToken`**             | Returned by `getTokenForKeonWiFi`. A JWT that also encodes the WebSocket server URL and device connection key. | WiFi (Socket.IO) control credentials.                                      |
+| **`deviceConnectionKey`**           | Returned by `getTokenForKeonWiFi`; originally issued by the FeelConnect app.                                   | Re-associate the **same** device across sessions; also the FUG credential. |
 
 ---
 
@@ -118,32 +116,19 @@ await manager.moveTo(50, 90);
 await manager.disconnect();
 ```
 
-### Fallback: provision and control over BLE
+### Fallback: direct control over BLE
 
-Browser-only. Provisioning is normally handled by the FeelConnect app — this path
-is for cases where provisioning (or driving the motor locally) must happen inside
-the application itself. The right device driver (KEON WIFI / KEON2) is selected
-automatically.
+Browser-only, no server involved. The right device driver (KEON WIFI / KEON2 /
+ONYX ULTRA) is selected automatically.
 
 ```typescript
-import { getTokenForKeonWiFi, BleManager } from '@feelrobotics/keon-wifi-sdk';
-
-// Provisioning needs a registration token; control alone does not.
-const { registrationToken } = await getTokenForKeonWiFi(partnerToken);
+import { BleManager } from '@feelrobotics/keon-wifi-sdk';
 
 // Must run from a user gesture (e.g. a click handler).
 const ble = await BleManager.connect({
   onPosition: (p) => console.log('position', p.position),
 });
 try {
-  await ble.provision('MyWiFi', 'pass123', registrationToken, {
-    onStatus: (event) =>
-      console.log(event.stage, event.status, event.code, event.rawValue),
-    postProvisionListenUntilDisconnect: true,
-  });
-  console.log('Provisioned', ble.deviceInfo.serialNumber);
-
-  // Drive the motor directly over BLE, no server involved.
   await ble.moveTo(50, 90);
   await ble.movementBetween(60, 0, 100);
   console.log('battery', await ble.getBattery());
@@ -178,7 +163,7 @@ await manager.disconnect();
 
 Use the [`@feelrobotics/keon-wifi-sdk-react`](https://www.npmjs.com/package/@feelrobotics/keon-wifi-sdk-react)
 adapter. `connectFug` is the recommended path; `connectWifi` covers real-time and
-`provision` / `connectBle` are the BLE fallback:
+`connectBle` is the local fallback:
 
 ```tsx
 import { useKeonWiFi } from '@feelrobotics/keon-wifi-sdk-react';
@@ -205,8 +190,8 @@ function DeviceControl({
 }
 ```
 
-The hook also exposes `connectWifi`, `connectBle`, `provision`, `disconnect`,
-plus `controller`, `statuses` (all devices) and `position` state.
+The hook also exposes `connectWifi`, `connectBle`, `disconnect`, plus
+`controller`, `statuses` (all devices) and `position` state.
 
 ### Vue 3 (composable, real-time over WiFi)
 
@@ -266,13 +251,13 @@ Authenticates against the FeelMe OAuth server and returns
 
 The server-backed transports add to `KeonController`:
 
-| Method                                    | Description                                 |
-| ----------------------------------------- | ------------------------------------------- |
-| `getStatuses()`                           | Statuses of every device on the connection. |
-| `setIntensity(intensity)`                 | Adjust intensity. Integer percentage 0–100. |
-| `setStatusInterval(interval)`             | Status report interval. Integer 0–1000.     |
-| `switchToBtMode()` / `resetCredentials()` | Reprovision commands.                       |
-| `forceStatusReport()`                     | Request an immediate status report.         |
+| Method                                    | Description                                                                                    |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `getStatuses()`                           | Statuses of every device on the connection.                                                    |
+| `setIntensity(intensity)`                 | Adjust intensity. Integer percentage 0–100.                                                    |
+| `setStatusInterval(interval)`             | Status report interval. Integer 0–1000.                                                        |
+| `switchToBtMode()` / `resetCredentials()` | Server-routed setup commands: switch the device to BT mode / wipe its stored WiFi credentials. |
+| `forceStatusReport()`                     | Request an immediate status report.                                                            |
 
 A single connection can cover several devices, so `onStatusChange` receives the
 full list of device statuses (one entry per device); `getStatus()` returns the
@@ -301,26 +286,15 @@ pushed. `callbacks` accepts `onStatusChange` and `onUserAction`. **Throws**
 The browser-only fallback. Prompts the user to pick a device, connects over GATT,
 reads device info and enters movement mode. Adds to `KeonController`:
 
-| Member                                       | Description                                                      |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| `provision(ssid, password, token, options?)` | Write WiFi credentials + registration token.                     |
-| `getBattery()`                               | Battery level 0–100, or -1 when unavailable.                     |
-| `testDevice()`                               | Short movement to confirm the device responds.                   |
-| `onPosition(cb)`                             | Subscribe to motor position notifications.                       |
-| `deviceInfo`                                 | `{ id, name, firmwareVersion, manufacturerName, serialNumber }`. |
+| Member           | Description                                                      |
+| ---------------- | ---------------------------------------------------------------- |
+| `getBattery()`   | Battery level 0–100, or -1 when unavailable.                     |
+| `testDevice()`   | Short movement to confirm the device responds.                   |
+| `onPosition(cb)` | Subscribe to motor position notifications.                       |
+| `deviceInfo`     | `{ id, name, firmwareVersion, manufacturerName, serialNumber }`. |
+| `driverName`     | Name of the driver that matched the connected device.            |
 
 - **Throws** `KeonBLEError` on selection/connection failure or unsupported device.
-- **Throws** `KeonProvisioningError` on missing arguments or handshake failure.
-
-`provision()` accepts `{ onStatus }` to observe SDK progress and device-originated
-BLE provisioning responses. Device status codes are decoded as `16 = success`,
-`17 = ongoing`, `18 = failed`; the emitted `KeonProvisioningEvent` also includes
-the active stage, source (`sdk`, `device-readback`, `device-notification`), and
-raw bytes received from the characteristic. Set `finalStatusTimeoutMs` to keep
-listening for a late final success/failure notification after `PROV_CRED_CONFIRM`
-before the method resolves. Set `postProvisionListenUntilDisconnect` to keep
-listening for late BLE messages until the device itself drops the Bluetooth
-GATT connection.
 
 ### Device drivers
 
@@ -352,7 +326,7 @@ try {
 }
 ```
 
-`KeonError` · `AuthError` · `KeonBLEError` · `KeonProvisioningError`
+`KeonError` · `AuthError` · `KeonBLEError`
 
 ---
 

@@ -90,8 +90,7 @@
     <h2>Connection</h2>
     <p class="hint">
       FUG controls an <strong>already-provisioned</strong> device. Get a
-      <code>deviceConnectionKey</code> from the FeelConnect app (or a
-      <code>classic/</code> provisioning example).
+      <code>deviceConnectionKey</code> from the FeelConnect app.
     </p>
     <label>
       deviceConnectionKey

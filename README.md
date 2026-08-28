@@ -16,10 +16,9 @@ method:
    for most integrations.
 2. **WiFi (`WifiManager`) — for real-time.** Socket.IO with pushed, low-latency
    status. Suitable when live, interactive control is required.
-3. **BLE (`BleManager`) — fallback.** Direct Web Bluetooth, browser-only.
-   Provisioning is normally handled by the FeelConnect app; BLE is reserved as a
-   fallback (in-browser provisioning or local control when the FeelConnect app is
-   not an option).
+3. **BLE (`BleManager`) — fallback.** Direct Web Bluetooth, browser-only. For
+   local control when a server connection is not an option. Device setup stays
+   with the FeelConnect app.
 
 ## Packages
 
@@ -46,22 +45,13 @@ a `deviceConnectionKey`:
 | `examples/fug/vanilla` | TypeScript + Vite, FUG REST transport | `yarn dev:fug:vanilla` |
 | `examples/fug/node`    | Node, FUG REST (control only)         | `yarn dev:fug:node`    |
 
-**Classic (fallback)** — in-browser BLE provisioning + real-time WiFi control:
-
-| Example                    | Stack             | Run                        |
-| -------------------------- | ----------------- | -------------------------- |
-| `examples/classic/react`   | React + Vite      | `yarn dev:classic:react`   |
-| `examples/classic/vue`     | Vue 3 + Vite      | `yarn dev:classic:vue`     |
-| `examples/classic/svelte`  | Svelte 5 + Vite   | `yarn dev:classic:svelte`  |
-| `examples/classic/vanilla` | TypeScript + Vite | `yarn dev:classic:vanilla` |
-
 **Tooling:**
 
 | Example                      | Stack                        | Run                 |
 | ---------------------------- | ---------------------------- | ------------------- |
 | `examples/keon-emulator-web` | React + Vite device emulator | `yarn dev:emulator` |
 
-> The classic examples use the **Web Bluetooth API** — browser-only
+> Direct BLE control uses the **Web Bluetooth API** — browser-only
 > (Chrome/Edge/Opera, over `https://` or `localhost`). FUG and WiFi control work
 > anywhere, including Node.js. The emulator example does not require physical
 > hardware.
@@ -95,11 +85,11 @@ yarn size         # check the core bundle-size limit
 
 # run an example (builds the libs first)
 yarn dev                # the FUG React example (alias for dev:fug:react)
-yarn dev:classic:react  # ...or any other dev:classic:* / dev:fug:* / dev:emulator
+yarn dev:fug:vue        # ...or any other dev:fug:* / dev:emulator
 
 # a single package or example
 yarn workspace @feelrobotics/keon-wifi-sdk test
-yarn workspace keon-classic-vue build
+yarn workspace keon-fug-vue build
 ```
 
 ## Documentation

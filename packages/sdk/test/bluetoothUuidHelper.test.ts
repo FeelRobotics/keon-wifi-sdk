@@ -1,7 +1,4 @@
-import {
-  toFullUUID,
-  fromFullUUID,
-} from '../src/utils/bluetooth-uuid-helper';
+import { toFullUUID, fromFullUUID } from '../src/utils/bluetooth-uuid-helper';
 
 describe('toFullUUID', () => {
   it('converts a 16-bit UUID to Bluetooth namespace format', () => {
@@ -20,7 +17,7 @@ describe('toFullUUID', () => {
     expect(toFullUUID(0x1900)).toBe('00001900-0000-1000-8000-00805f9b34fb');
   });
 
-  it('handles the SDK provisioning characteristic UUID 0x2001', () => {
+  it('handles a 16-bit characteristic UUID 0x2001', () => {
     expect(toFullUUID(0x2001)).toBe('00002001-0000-1000-8000-00805f9b34fb');
   });
 });
@@ -36,7 +33,7 @@ describe('fromFullUUID', () => {
 
   it('round-trips with toFullUUID', () => {
     const originals = [0x2a19, 0x1900, 0x2001, 0xffff, 0x0001];
-    originals.forEach(uuid =>
+    originals.forEach((uuid) =>
       expect(fromFullUUID(toFullUUID(uuid))).toBe(uuid)
     );
   });

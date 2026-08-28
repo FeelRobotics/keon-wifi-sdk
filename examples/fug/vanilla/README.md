@@ -1,10 +1,14 @@
 # Keon FUG Console — Vanilla TypeScript
 
-A control console for an **already-provisioned** Keon device over the Feel Unified Gateway (FUG) REST transport, with no framework — FUG is the recommended transport for most integrations.
+A control console for an **already-provisioned** Keon device over the Feel
+Unified Gateway (FUG) REST transport, with no framework. It exercises every
+device command: `moveTo`, `movementBetween`, `stop`, `setIntensity`,
+`setStatusInterval`, `switchToBtMode`, `resetCredentials`, and pulled status
+(`forceStatusReport` / optional polling).
 
-It exercises every device command: `moveTo`, `movementBetween`, `stop`, `setIntensity`, `setStatusInterval`, `switchToBtMode`,`resetCredentials`, and pulled status (`forceStatusReport` / optional polling).
-
-Provisioning is **out of scope** — it needs Web Bluetooth and is handled by the **FeelConnect** app (or a `classic/` browser example), which provide a `deviceConnectionKey` to paste here.
+Provisioning is **out of scope** — it needs Web Bluetooth and is handled by the
+**FeelConnect** app, which gives you a
+`deviceConnectionKey` to paste here.
 
 ## Run
 
@@ -12,5 +16,3 @@ Provisioning is **out of scope** — it needs Web Bluetooth and is handled by th
 yarn install          # from the repo root
 yarn dev:fug:vanilla
 ```
-
-Paste a `deviceConnectionKey`, click **Connect**, and drive the device.

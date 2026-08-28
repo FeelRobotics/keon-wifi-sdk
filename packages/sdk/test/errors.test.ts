@@ -1,9 +1,4 @@
-import {
-  KeonError,
-  AuthError,
-  KeonBLEError,
-  KeonProvisioningError,
-} from '../src/errors';
+import { KeonError, AuthError, KeonBLEError } from '../src/errors';
 
 describe('KeonError', () => {
   it('sets name and message correctly', () => {
@@ -57,40 +52,23 @@ describe('KeonBLEError', () => {
   });
 });
 
-describe('KeonProvisioningError', () => {
-  it('sets name to KeonProvisioningError', () => {
-    expect(new KeonProvisioningError('prov failed').name).toBe(
-      'KeonProvisioningError'
-    );
-  });
-
-  it('is an instance of KeonError', () => {
-    expect(new KeonProvisioningError('x')).toBeInstanceOf(KeonError);
-  });
-});
-
 describe('error class hierarchy', () => {
   it('all subclass names are unique', () => {
     const names = [
       new KeonError('e').name,
       new AuthError('e').name,
       new KeonBLEError('e').name,
-      new KeonProvisioningError('e').name,
     ];
-    expect(new Set(names).size).toBe(4);
+    expect(new Set(names).size).toBe(3);
   });
 
   it('instanceof KeonError catches all SDK errors', () => {
-    const errors = [
-      new AuthError('e'),
-      new KeonBLEError('e'),
-      new KeonProvisioningError('e'),
-    ];
-    errors.forEach(err => expect(err).toBeInstanceOf(KeonError));
+    const errors = [new AuthError('e'), new KeonBLEError('e')];
+    errors.forEach((err) => expect(err).toBeInstanceOf(KeonError));
   });
 
   it('subclass errors are not interchangeable', () => {
     expect(new AuthError('x')).not.toBeInstanceOf(KeonBLEError);
-    expect(new KeonBLEError('x')).not.toBeInstanceOf(KeonProvisioningError);
+    expect(new KeonBLEError('x')).not.toBeInstanceOf(AuthError);
   });
 });

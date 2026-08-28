@@ -1,5 +1,4 @@
 import { AuthResponse, ResponseRegistrationToken } from './models/AuthResponse';
-import { DEFAULT_OAUTH_SERVER_URL } from './helpers';
 
 class OauthApiArgs {
   method: string = 'POST';
@@ -20,9 +19,9 @@ class OauthApiArgs {
 }
 
 const oauthApi = async <T>(args: OauthApiArgs): Promise<T | null> => {
-  // If the OAuth server URL is not filled in, we ignore the token receiving functionality.
+  // If the OAuth server URL is not filled in, we ignore the token receiving
   if (!args.baseUrl) {
-    console.error('baseUrl not found', args);
+    console.error('oauthApi: baseUrl is not set');
     return null;
   }
 
@@ -53,6 +52,7 @@ const oauthApi = async <T>(args: OauthApiArgs): Promise<T | null> => {
 };
 
 const fetchAccessToken = async (
+  baseUrl: string | null = null,
   feelAppsToken: string,
   deviceConnectionKey: string | null = null
 ): Promise<[string | null, string | null]> => {
@@ -66,7 +66,9 @@ const fetchAccessToken = async (
   if (deviceConnectionKey) {
     args.data = { device_connection_key: deviceConnectionKey };
   }
-  args.baseUrl = DEFAULT_OAUTH_SERVER_URL;
+  if (baseUrl) {
+    args.baseUrl = baseUrl;
+  }
   const response = await oauthApi<AuthResponse>(args);
   if (response && 'access_token' in response) {
     return [response.access_token, response.refresh_token];
@@ -75,6 +77,7 @@ const fetchAccessToken = async (
 };
 
 const fetchRegistrationToken = async (
+  baseUrl: string | null = null,
   accessToken: string
 ): Promise<string | null> => {
   if (!accessToken) {
@@ -90,7 +93,9 @@ const fetchRegistrationToken = async (
   args.path = '/api/token/registration';
   args.headers = headers;
 
-  args.baseUrl = DEFAULT_OAUTH_SERVER_URL;
+  if (baseUrl) {
+    args.baseUrl = baseUrl;
+  }
   const response = await oauthApi<ResponseRegistrationToken>(args);
   if (response && 'registration_token' in response) {
     return response.registration_token;
